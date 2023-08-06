@@ -1,0 +1,46 @@
+/*C3*/SET SCHEMA PUBLIC
+drop table groupmemberships if exists
+drop table groups if exists
+drop table requests if exists
+drop table transactions if exists
+drop table users if exists
+create table groupmemberships (id varchar(36) not null, group_display varchar(255), group_id varchar(36) not null, user_display varchar(255), user_id varchar(36) not null, primary key (id))
+create table groups (id varchar(36) not null, display_name varchar(250) not null, primary key (id))
+create table requests (id varchar(36) not null, endpoint varchar(250), method varchar(20), time_stamp varchar(255) not null, primary key (id))
+create table transactions (id varchar(36) not null, endpoint varchar(250), http_code integer, java_method varchar(300), method varchar(20), request_body varchar(2147483647), request_id varchar(36), response_body varchar(2147483647), time_stamp varchar(255) not null, primary key (id))
+create table users (id varchar(36) not null, active boolean default false, family_name varchar(250), given_name varchar(250), middle_name varchar(250), user_name varchar(250) not null, primary key (id))
+alter table users add constraint UK_k8d0f2n7n88w1a16yhua64onx unique (user_name)
+INSERT INTO REQUESTS VALUES('ac9ab537-2786-4abc-b698-e6cb10e23beb','/','GET','2018-09-13T11:21:25.881Z')
+COMMIT
+INSERT INTO REQUESTS VALUES('a129b829-fc80-490e-84d0-0d2206aae4ed','/scim/v2/Users','POST','2018-09-13T11:21:27.826Z')
+COMMIT
+INSERT INTO USERS VALUES('a5f5f754-8f9a-4c40-93d6-3a79c19f4794',TRUE,'Doe 3','John',NULL,'john.doe3@scim.org')
+COMMIT
+INSERT INTO TRANSACTIONS VALUES('65372eae-35da-457c-bd9f-724f5ee471aa','/scim/v2/Users',201,'HandlerExecutionChain with handler [public java.util.Map controllers.com.ubits.scim.UsersController.usersPost(java.util.Map<java.lang.String, java.lang.Object>,javax.servlet.http.HttpServletResponse)] and 4 interceptors','POST','{\u000a\u0009"schemas": [\u000a\u0009\u0009"urn:ietf:params:scim:schemas:core:2.0:User"\u000a\u0009],\u000a\u0009"userName": "john.doe3@scim.org",\u000a\u0009"name": {\u000a\u0009\u0009"givenName": "John",\u000a\u0009\u0009"familyName": "Doe 3"\u000a\u0009},\u000a\u0009"emails": [\u000a\u0009\u0009{\u000a\u0009\u0009\u0009"primary": true,\u000a\u0009\u0009\u0009"value": "john.doe3@scim.org",\u000a\u0009\u0009\u0009"type": "work"\u000a\u0009\u0009}\u000a\u0009],\u000a\u0009"displayName": "John Doe 3",\u000a\u0009"locale": "en-US",\u000a\u0009"externalId": "00ufuzvb73DuxqoHh0h7",\u000a\u0009"groups": [],\u000a\u0009"password": "6wW5P48v",\u000a\u0009"active": true\u000a}','a129b829-fc80-490e-84d0-0d2206aae4ed','{"emails":[{"type":"work","value":"john.doe3@scim.org","primary":true}],"meta":{"location":"/scim/v2/Users/a5f5f754-8f9a-4c40-93d6-3a79c19f4794","resourceType":"User"},"schemas":["urn:ietf:params:scim:schemas:core:2.0:User"],"name":{"familyName":"Doe 3","givenName":"John","middleName":null},"active":true,"id":"a5f5f754-8f9a-4c40-93d6-3a79c19f4794","userName":"john.doe3@scim.org"}','2018-09-13T11:21:27.917Z')
+COMMIT
+INSERT INTO REQUESTS VALUES('40413f7b-00b6-4c8e-b620-77ae85f14976','/scim/v2/Groups','POST','2018-09-13T11:21:37.953Z')
+COMMIT
+INSERT INTO GROUPS VALUES('7268eedc-8f52-4e0a-b01b-025b37b19d57','Scim Import Group 3')
+COMMIT
+INSERT INTO GROUPMEMBERSHIPS VALUES('f9fa08ba-76c8-47df-bfb6-1bde90c8a3ef','Scim Import Group 3','7268eedc-8f52-4e0a-b01b-025b37b19d57','john.doe3@scim.org','a5f5f754-8f9a-4c40-93d6-3a79c19f4794')
+COMMIT
+INSERT INTO TRANSACTIONS VALUES('87d497ec-bdf8-4f3b-8dab-88db88563313','/scim/v2/Groups',201,'HandlerExecutionChain with handler [public java.util.Map controllers.com.ubits.scim.GroupsController.groupsPost(java.util.Map<java.lang.String, java.lang.Object>,javax.servlet.http.HttpServletResponse)] and 4 interceptors','POST','{\u000a\u0009"schemas": [\u000a\u0009\u0009"urn:ietf:params:scim:schemas:core:2.0:Group"\u000a\u0009],\u000a\u0009"displayName": "Scim Import Group 3",\u000a\u0009"members": [\u000a\u0009\u0009{\u000a\u0009\u0009\u0009"display": "john.doe3@scim.org",\u000a\u0009\u0009\u0009"value": "a5f5f754-8f9a-4c40-93d6-3a79c19f4794"\u000a\u0009\u0009}\u000a\u0009]\u000a}','40413f7b-00b6-4c8e-b620-77ae85f14976','{"displayName":"Scim Import Group 3","meta":{"location":"/scim/v2/Groups/7268eedc-8f52-4e0a-b01b-025b37b19d57","resourceType":"Group"},"schemas":["urn:ietf:params:scim:schemas:core:2.0:Group"],"members":[{"display":"john.doe3@scim.org","value":"a5f5f754-8f9a-4c40-93d6-3a79c19f4794"}],"id":"7268eedc-8f52-4e0a-b01b-025b37b19d57"}','2018-09-13T11:21:37.968Z')
+COMMIT
+INSERT INTO REQUESTS VALUES('2b560219-c366-4fde-bbcc-7625829cc67d','/scim/v2/Groups','GET','2018-09-13T11:21:43.011Z')
+COMMIT
+INSERT INTO TRANSACTIONS VALUES('48008e95-afcc-47be-a769-92be8b1d7dc1','/scim/v2/Groups',200,'HandlerExecutionChain with handler [public java.util.Map controllers.com.ubits.scim.GroupsController.groupsGet(java.util.Map<java.lang.String, java.lang.String>)] and 4 interceptors','GET','[unknown]','2b560219-c366-4fde-bbcc-7625829cc67d','{"totalResults":1,"startIndex":0,"itemsPerPage":1,"schemas":["urn:ietf:params:scim:api:messages:2.0:ListResponse"],"Resources":[{"displayName":"Scim Import Group 3","meta":{"location":"/scim/v2/Groups/7268eedc-8f52-4e0a-b01b-025b37b19d57","resourceType":"Group"},"schemas":["urn:ietf:params:scim:schemas:core:2.0:Group"],"members":[{"display":"john.doe3@scim.org","value":"a5f5f754-8f9a-4c40-93d6-3a79c19f4794"}],"id":"7268eedc-8f52-4e0a-b01b-025b37b19d57"}]}','2018-09-13T11:21:43.055Z')
+COMMIT
+INSERT INTO REQUESTS VALUES('cb09167f-6e58-4429-a76e-67974230b5d4','/scim/v2/Users','GET','2018-09-13T11:21:45.124Z')
+COMMIT
+INSERT INTO TRANSACTIONS VALUES('2f8244dc-2fe1-4513-8fc1-ab7047259b67','/scim/v2/Users',200,'HandlerExecutionChain with handler [public java.util.Map controllers.com.ubits.scim.UsersController.usersGet(java.util.Map<java.lang.String, java.lang.String>)] and 4 interceptors','GET','[unknown]','cb09167f-6e58-4429-a76e-67974230b5d4','{"totalResults":1,"startIndex":0,"itemsPerPage":1,"schemas":["urn:ietf:params:scim:api:messages:2.0:ListResponse"],"Resources":[{"emails":[{"type":"work","value":"john.doe3@scim.org","primary":true}],"meta":{"location":"/scim/v2/Users/a5f5f754-8f9a-4c40-93d6-3a79c19f4794","resourceType":"User"},"schemas":["urn:ietf:params:scim:schemas:core:2.0:User"],"name":{"familyName":"Doe 3","givenName":"John","middleName":null},"active":true,"groups":[{"display":"Scim Import Group 3","value":"7268eedc-8f52-4e0a-b01b-025b37b19d57"}],"id":"a5f5f754-8f9a-4c40-93d6-3a79c19f4794","userName":"john.doe3@scim.org"}]}','2018-09-13T11:21:45.130Z')
+COMMIT
+INSERT INTO REQUESTS VALUES('abb94a22-649b-41bf-a349-0b198b9dda47','/scim/v2/Users?startIndex=1&count=100','GET','2018-09-13T11:22:01.754Z')
+COMMIT
+INSERT INTO TRANSACTIONS VALUES('371afce9-f031-45b0-a075-c8d14cd64725','/scim/v2/Users?startIndex=1&count=100',200,'HandlerExecutionChain with handler [public java.util.Map controllers.com.ubits.scim.UsersController.usersGet(java.util.Map<java.lang.String, java.lang.String>)] and 4 interceptors','GET','[unknown]','abb94a22-649b-41bf-a349-0b198b9dda47','{"totalResults":1,"startIndex":0,"itemsPerPage":1,"schemas":["urn:ietf:params:scim:api:messages:2.0:ListResponse"],"Resources":[{"emails":[{"type":"work","value":"john.doe3@scim.org","primary":true}],"meta":{"location":"/scim/v2/Users/a5f5f754-8f9a-4c40-93d6-3a79c19f4794","resourceType":"User"},"schemas":["urn:ietf:params:scim:schemas:core:2.0:User"],"name":{"familyName":"Doe 3","givenName":"John","middleName":null},"active":true,"groups":[{"display":"Scim Import Group 3","value":"7268eedc-8f52-4e0a-b01b-025b37b19d57"}],"id":"a5f5f754-8f9a-4c40-93d6-3a79c19f4794","userName":"john.doe3@scim.org"}]}','2018-09-13T11:22:01.758Z')
+COMMIT
+INSERT INTO REQUESTS VALUES('c050eaaf-e88e-40a5-8c90-5f5e26b2e475','/scim/v2/Groups?startIndex=1&count=100','GET','2018-09-13T11:22:01.933Z')
+COMMIT
+INSERT INTO TRANSACTIONS VALUES('8e3e2e54-2a94-4270-869c-aeb9033b6aca','/scim/v2/Groups?startIndex=1&count=100',200,'HandlerExecutionChain with handler [public java.util.Map controllers.com.ubits.scim.GroupsController.groupsGet(java.util.Map<java.lang.String, java.lang.String>)] and 4 interceptors','GET','[unknown]','c050eaaf-e88e-40a5-8c90-5f5e26b2e475','{"totalResults":1,"startIndex":0,"itemsPerPage":1,"schemas":["urn:ietf:params:scim:api:messages:2.0:ListResponse"],"Resources":[{"displayName":"Scim Import Group 3","meta":{"location":"/scim/v2/Groups/7268eedc-8f52-4e0a-b01b-025b37b19d57","resourceType":"Group"},"schemas":["urn:ietf:params:scim:schemas:core:2.0:Group"],"members":[{"display":"john.doe3@scim.org","value":"a5f5f754-8f9a-4c40-93d6-3a79c19f4794"}],"id":"7268eedc-8f52-4e0a-b01b-025b37b19d57"}]}','2018-09-13T11:22:01.939Z')
+COMMIT
+INSERT INTO REQUESTS VALUES('d77418fa-2196-4739-b9af-54bd26d98531','/','GET','2018-09-13T11:22:22.953Z')
+COMMIT
