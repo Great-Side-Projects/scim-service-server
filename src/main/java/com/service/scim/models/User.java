@@ -83,7 +83,172 @@ public class User extends BaseModel {
     @Column(length=250)
     public String givenName;
 
-    public User() {}
+    /**
+     * The title of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String title;
+
+    /**
+     * The displayName of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String displayName;
+
+    /**
+     * The locale of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String locale;
+
+    /**
+     * The nickName of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String nickName;
+
+    /**
+     * The profileUrl of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String profileUrl;
+
+    /**
+     * The secondEmail of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String secondEmail;
+
+    /**
+     * The mobilePhone of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String mobilePhone;
+
+    /**
+     * The primaryPhone of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String primaryPhone;
+
+    /**
+     * The Street Address of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String streetAddress;
+
+    /**
+     * The city of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String city;
+
+    /**
+     * The state or province of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String state;
+
+    /**
+     * The organization of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String organization;
+
+    /**
+     * The division of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String division;
+
+    /**
+     * The manager of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String manager;
+
+
+    /**
+     * The department of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String department;
+
+    /**
+     * The Office location of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String officeLocation;
+
+    /**
+     * The country of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String country;
+
+    /**
+     * The Business phone of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String businessphone;
+
+    /**
+     * The Employee Number phone of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String employeeNumber;
+
+    /**
+     * The Postal Code of the user
+     * Max length: 250
+     */
+    @Column(length=250)
+    public String postalCode;
+
+    private static Map<String, String> mappedProperty = new HashMap<>();;
+
+    public boolean IsMappedProperty(String key){
+        return this.mappedProperty.containsKey(key);
+    }
+    public String getMappedProperty(String Key){
+        return  mappedProperty.get(Key);
+    }
+
+    public User() {
+        InitmappedProperty();
+    }
+
+    private static void InitmappedProperty() {
+        mappedProperty.put("addresses[type eq \"work\"].formatted","officeLocation");
+        mappedProperty.put("addresses[type eq \"work\"].streetAddress","streetAddress");
+        mappedProperty.put("addresses[type eq \"work\"].locality","city");
+        mappedProperty.put("addresses[type eq \"work\"].postalCode","postalCode");
+        mappedProperty.put("addresses[type eq \"work\"].country","country");
+        mappedProperty.put("phoneNumbers[type eq \"work\"].value","businessphone");
+        mappedProperty.put("phoneNumbers[type eq \"mobile\"].value","mobilePhone");
+        mappedProperty.put("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:employeeNumber","employeeNumber");
+        mappedProperty.put("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department","department");
+        mappedProperty.put("addresses[type eq \"work\"].region","state");
+    }
 
     public User(Map<String, Object> resource){
         this.update(resource);
@@ -97,36 +262,102 @@ public class User extends BaseModel {
         try{
             Map<String, Object> names = (Map<String, Object>)resource.get("name");
 
-            Map<String, Object> email;
-            if (!((ArrayList) resource.get("emails")).isEmpty())
-            {
-                email = ((Map<String, Object>)((ArrayList) resource.get("emails")).get(0));
-                names.put("email",email.get("value"));
-            }
-
             for(String subName : names.keySet()){
                 switch (subName) {
                     case "givenName":
-                        this.givenName = names.get(subName) == null ? null : names.get(subName).toString();
+                        this.givenName = getMapValue(names, subName);
                         break;
                     case "familyName":
-                        this.familyName = names.get(subName) == null ? null : names.get(subName).toString();
+                        this.familyName = getMapValue(names, subName);
                         break;
                     case "middleName":
-                        this.middleName = names.get(subName) == null ? null : names.get(subName).toString();
-                        break;
-                    case "email":
-                        this.email = names.get(subName) == null ? null : names.get(subName).toString();
+                        this.middleName = getMapValue(names, subName);
                         break;
                     default:
                         break;
                 }
             }
+
+          ((ArrayList)resource.get("emails")).forEach( email -> {
+                Map<String, Object>  e = (Map<String, Object>)email;
+                if (((Boolean) e.get("primary")))
+                    this.email = getMapValue(e, "value");
+            });
+
+          if(resource.containsKey("phoneNumbers")) {
+              ((ArrayList) resource.get("phoneNumbers")).forEach(phoneNumber -> {
+                  Map<String, Object> phone = (Map<String, Object>) phoneNumber;
+                  if (((Boolean) phone.get("primary")))
+                      this.primaryPhone = getMapValue(phone, "value");
+                  if (phone.get("type").equals("mobile"))
+                      this.mobilePhone = getMapValue(phone, "value");
+                  if (phone.get("type").equals("work"))
+                      this.businessphone = getMapValue(phone, "value");
+              });
+          }
+
+          if(resource.containsKey("addresses")) {
+              ((ArrayList) resource.get("addresses")).forEach(address -> {
+                  Map<String, Object> a = (Map<String, Object>) address;
+                  //if (((Boolean) a.get("primary")))
+                  this.streetAddress = getMapValue(a, "streetAddress");
+                  this.country = getMapValue(a, "country");
+                  this.city = getMapValue(a, "locality");
+                  this.postalCode = getMapValue(a, "postalCode");
+                  this.state = getMapValue(a, "region");
+                  return;
+              });
+          }
+
+          Map<String, Object> userComapanyData =  resource.containsKey("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User") ? (Map<String, Object>)resource.get("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User") : new HashMap<>();
+
+          if (containsKeyMapValue(userComapanyData,"country"))
+              this.country = getMapValue(userComapanyData,"country");
+          if (containsKeyMapValue(userComapanyData,"postalCode"))
+              this.postalCode = getMapValue(userComapanyData,"postalCode");
+
+          this.department = getMapValue(userComapanyData,"department");
+          this.division = getMapValue(userComapanyData,"division");
+          this.employeeNumber = getMapValue(userComapanyData,"employeeNumber");
+
+          this.organization = getMapValue(userComapanyData,"organization");
+
+          if (containsKeyMapValue(userComapanyData,"manager"))
+              this.manager = getMapValue((Map<String, Object>)userComapanyData.get("manager") ,"displayName");
+
           this.userName = resource.get("userName").toString();
           this.active = (Boolean)resource.get("active");
+          this.title = getMapValue(resource, "title");
+          this.displayName = getMapValue(resource, "displayName");
+          this.nickName = getMapValue(resource, "nickName");
+          this.profileUrl = getMapValue(resource, "profileUrl");
+          this.secondEmail = getMapValue(resource, "secondEmail");
+          this.locale = getMapValue(resource, "locale");
+
+          if (containsKeyMapValue(resource,"mobilePhone"))
+              this.mobilePhone = getMapValue(resource, "mobilePhone");
+          if (containsKeyMapValue(resource,"state"))
+              this.state = getMapValue(resource, "state");
+          if (containsKeyMapValue(resource,"businessphone"))
+              this.businessphone = getMapValue(resource, "businessphone");
+          if (containsKeyMapValue(resource,"streetAddress"))
+              this.streetAddress = getMapValue(resource, "streetAddress");
+          if (containsKeyMapValue(resource,"city"))
+              this.city = getMapValue(resource, "city");
+
+          this.officeLocation = getMapValue(userComapanyData,"officeLocation");
+
         } catch(Exception e) {
              System.out.println(e);
         }
+    }
+
+    private static String getMapValue(Map<String, Object> resource, String key) {
+      return resource.get(key) == null ? null : resource.get(key).toString();
+    }
+
+    private static Boolean containsKeyMapValue(Map<String, Object> resource, String key) {
+        return resource.containsKey(key);
     }
 
     /**
@@ -159,7 +390,7 @@ public class User extends BaseModel {
         List<Map<String, Object>> emails = new ArrayList<>();
         Map<String, Object> primaryEmail = new HashMap<>();
         primaryEmail.put("primary", true);
-        primaryEmail.put("value", userName);
+        primaryEmail.put("value", email);
         primaryEmail.put("type", "work");
         emails.add(primaryEmail);
         returnValue.put("emails", emails);

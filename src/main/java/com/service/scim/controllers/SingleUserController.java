@@ -17,12 +17,14 @@ package com.service.scim.controllers;
 
 import com.service.scim.database.UserDatabase;
 import com.service.scim.models.User;
+import org.hibernate.mapping.KeyValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
+import java.security.KeyPair;
 import java.util.*;
 
 /**
@@ -107,28 +109,34 @@ public class SingleUserController {
         //Find user for update
         User user = db.findById(id).get(0);
 
+        Map<String, Object> values = new HashMap();
         for(Map map : operations){
-            if(!map.get("op").toString().toLowerCase().equals("replace")){
-                continue;
-            }
-            Map<String, Object> value = new HashMap(){
-                {
-                    put(map.get("path").toString(), Boolean.parseBoolean(map.get("value").toString()));
-                }
-            };
 
-            // Use Java reflection to find and set User attribute
-            for (Map.Entry key : value.entrySet()) {
-                try {
-                    Field field = user.getClass().getDeclaredField(key.getKey().toString());
-                    field.set(user, key.getValue());
-                } catch (NoSuchFieldException | IllegalAccessException e) {
-                    // Error - Do not update field
-                }
-            }
+            String key = map.get("path").toString();
+            String value = map.get("value").toString();
 
-            db.save(user);
+            switch (key) {
+                case "active":
+                    values.put(key, Boolean.parseBoolean(value));
+                    break;
+                default:
+                    key = user.IsMappedProperty(key) ? user.getMappedProperty(key) : key;
+                    values.put(key, value);
+                    break;
+            }
         }
+
+        // Use Java reflection to find and set User attribute
+        for (Map.Entry key : values.entrySet()) {
+            try {
+                Field field = user.getClass().getDeclaredField(key.getKey().toString());
+                field.set(user, key.getValue());
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                // Error - Do not update field
+            }
+        }
+
+        db.save(user);
 
         return user.toScimResource();
     }
