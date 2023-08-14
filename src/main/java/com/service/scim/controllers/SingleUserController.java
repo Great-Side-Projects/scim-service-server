@@ -19,10 +19,15 @@ import com.service.scim.database.UserDatabase;
 import com.service.scim.models.User;
 import org.hibernate.mapping.KeyValue;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeListenerProxy;
 import java.lang.reflect.Field;
 import java.security.KeyPair;
 import java.util.*;
@@ -32,6 +37,7 @@ import java.util.*;
  */
 @Controller
 @RequestMapping("/scim/v2/Users/{id}")
+@CrossOrigin("*")
 public class SingleUserController {
     UserDatabase db;
 
@@ -48,9 +54,11 @@ public class SingleUserController {
      * @return {@link #scimError(String, Optional)} / JSON {@link Map} of {@link User}
      */
     @RequestMapping(method = RequestMethod.GET)
-    public @ResponseBody Map singeUserGet(@PathVariable String id,  HttpServletResponse response) {
+    public @ResponseBody Map singeUserGet(@PathVariable String id,  HttpServletResponse response,
+                                          @RequestHeader(required = false) Map<String, String> headers) {
 
         try {
+            //System.out.println(headers);
             User user = db.findById(id).get(0);
             return user.toScimResource();
 
@@ -68,11 +76,25 @@ public class SingleUserController {
      */
     @RequestMapping(method = RequestMethod.PUT)
     public @ResponseBody Map singleUserPut(@RequestBody Map<String, Object> payload,
-                                           @PathVariable String id) {
+                                           @PathVariable String id,
+                                           @RequestHeader(required = false) Map<String, String> headers) {
+
+        //System.out.println(headers);
         User user = db.findById(id).get(0);
         user.update(payload);
         db.save(user);
         return user.toScimResource();
+    }
+
+
+    void propertyChangeActive(PropertyChangeEvent evt){
+        //try {
+            System.out.println("valores diferentes");
+         // Thread.sleep(10000);
+        //} catch (InterruptedException e) {
+            //    throw new RuntimeException(e);
+        //}
+
     }
 
     /**
@@ -117,7 +139,8 @@ public class SingleUserController {
 
             switch (key) {
                 case "active":
-                    values.put(key, Boolean.parseBoolean(value));
+                    //values.put(key, Boolean.parseBoolean(value));
+                    user.setActive(Boolean.parseBoolean(value));
                     break;
                 default:
                     key = user.IsMappedProperty(key) ? user.getMappedProperty(key) : key;

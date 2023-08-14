@@ -15,20 +15,16 @@
 
 package com.service.scim.models;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import com.service.scim.triggers.UserTrailListener;
+import javax.persistence.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.*;
 
 /**
  * Database schema for {@link User}
  */
-@Entity
+@Entity @EntityListeners(UserTrailListener.class)
 @Table(name = "users")
 public class User extends BaseModel {
     /**
@@ -38,6 +34,13 @@ public class User extends BaseModel {
     @Column(length = 36)
     @Id
     public String id;
+
+    public void setActive(Boolean value) {
+        if (!Objects.equals(this.active, value)) {
+            this.statusChanged = true;
+            this.active = value;
+        }
+    }
 
     /**
      * The active status of the user
@@ -233,6 +236,13 @@ public class User extends BaseModel {
         return  mappedProperty.get(Key);
     }
 
+    public Boolean getStatusChanged() {
+        return this.statusChanged;
+    }
+
+    @Transient
+    private Boolean statusChanged = false;
+
     public User() {
         InitmappedProperty();
     }
@@ -326,14 +336,14 @@ public class User extends BaseModel {
               this.manager = getMapValue((Map<String, Object>)userComapanyData.get("manager") ,"displayName");
 
           this.userName = resource.get("userName").toString();
-          this.active = (Boolean)resource.get("active");
+          this.setActive((Boolean)resource.get("active"));
           this.title = getMapValue(resource, "title");
           this.displayName = getMapValue(resource, "displayName");
           this.nickName = getMapValue(resource, "nickName");
           this.profileUrl = getMapValue(resource, "profileUrl");
           this.secondEmail = getMapValue(resource, "secondEmail");
           this.locale = getMapValue(resource, "locale");
-
+/*
           if (containsKeyMapValue(resource,"mobilePhone"))
               this.mobilePhone = getMapValue(resource, "mobilePhone");
           if (containsKeyMapValue(resource,"state"))
@@ -344,7 +354,7 @@ public class User extends BaseModel {
               this.streetAddress = getMapValue(resource, "streetAddress");
           if (containsKeyMapValue(resource,"city"))
               this.city = getMapValue(resource, "city");
-
+*/
           this.officeLocation = getMapValue(userComapanyData,"officeLocation");
 
         } catch(Exception e) {
