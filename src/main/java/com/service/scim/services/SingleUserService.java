@@ -13,7 +13,7 @@ import static com.service.scim.utils.SCIM.*;
 @Service
 public class SingleUserService implements ISingleUserService {
 
-     private final UserDatabase db;
+    private final UserDatabase db;
 
     public SingleUserService(UserDatabase db) {
         this.db = db;
