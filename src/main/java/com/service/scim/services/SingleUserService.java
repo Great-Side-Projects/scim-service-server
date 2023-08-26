@@ -5,7 +5,6 @@ import com.service.scim.models.User;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
-import java.lang.reflect.Field;
 import java.util.*;
 
 import static com.service.scim.utils.SCIM.*;
@@ -67,7 +66,6 @@ public class SingleUserService implements ISingleUserService {
         //Find user for update
         User user = db.findById(id).get(0);
 
-        Map<String, Object> values = new HashMap();
         for(Map map : operations){
 
             String key = map.get("path").toString();
@@ -75,25 +73,14 @@ public class SingleUserService implements ISingleUserService {
 
             switch (key) {
                 case "active":
-                    //values.put(key, Boolean.parseBoolean(value));
                     user.setActive(Boolean.parseBoolean(value));
                     break;
                 default:
-                    key = user.IsMappedProperty(key) ? user.getMappedProperty(key) : key;
-                    values.put(key, value);
+                    user.setProperty(key, value);
                     break;
             }
         }
 
-        // Use Java reflection to find and set User attribute
-        for (Map.Entry key : values.entrySet()) {
-            try {
-                Field field = user.getClass().getDeclaredField(key.getKey().toString());
-                field.set(user, key.getValue());
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                // Error - Do not update field
-            }
-        }
         db.save(user);
 
         return user.toScimResource();

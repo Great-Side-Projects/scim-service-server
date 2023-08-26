@@ -19,6 +19,7 @@ import com.service.scim.triggers.UserTrailListener;
 import javax.persistence.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -69,7 +70,7 @@ public class User extends BaseModel {
      * The last name (family name) of the user
      * Max length: 250
      */
-    @Column(length=250)
+    @Column(nullable=false, length=250)
     public String familyName;
 
     /**
@@ -83,7 +84,7 @@ public class User extends BaseModel {
      * The first name (given name) of the user
      * Max length: 250
      */
-    @Column(length=250)
+    @Column(nullable=false, length=250)
     public String givenName;
 
     /**
@@ -229,10 +230,10 @@ public class User extends BaseModel {
 
     private static Map<String, String> mappedProperty = new HashMap<>();;
 
-    public boolean IsMappedProperty(String key){
+    private boolean IsMappedProperty(String key){
         return this.mappedProperty.containsKey(key);
     }
-    public String getMappedProperty(String Key){
+    private String getMappedProperty(String Key){
         return  mappedProperty.get(Key);
     }
 
@@ -258,6 +259,11 @@ public class User extends BaseModel {
         mappedProperty.put("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:employeeNumber","employeeNumber");
         mappedProperty.put("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department","department");
         mappedProperty.put("addresses[type eq \"work\"].region","state");
+        mappedProperty.put("emails[type eq \"work\"].value","email");
+        mappedProperty.put("name.givenName","givenName");
+        mappedProperty.put("name.familyName","familyName");
+        mappedProperty.put("name.middleName","middleName");
+        mappedProperty.put("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager","manager");
     }
 
     public User(Map<String, Object> resource){
@@ -343,18 +349,6 @@ public class User extends BaseModel {
           this.profileUrl = getMapValue(resource, "profileUrl");
           this.secondEmail = getMapValue(resource, "secondEmail");
           this.locale = getMapValue(resource, "locale");
-/*
-          if (containsKeyMapValue(resource,"mobilePhone"))
-              this.mobilePhone = getMapValue(resource, "mobilePhone");
-          if (containsKeyMapValue(resource,"state"))
-              this.state = getMapValue(resource, "state");
-          if (containsKeyMapValue(resource,"businessphone"))
-              this.businessphone = getMapValue(resource, "businessphone");
-          if (containsKeyMapValue(resource,"streetAddress"))
-              this.streetAddress = getMapValue(resource, "streetAddress");
-          if (containsKeyMapValue(resource,"city"))
-              this.city = getMapValue(resource, "city");
-*/
           this.officeLocation = getMapValue(userComapanyData,"officeLocation");
 
         } catch(Exception e) {
@@ -389,6 +383,7 @@ public class User extends BaseModel {
         names.put("familyName", this.familyName);
         names.put("givenName", this.givenName);
         names.put("middleName", this.middleName);
+        names.put("displayName", this.displayName);
         returnValue.put("name", names);
 
         // Meta information
@@ -406,5 +401,16 @@ public class User extends BaseModel {
         returnValue.put("emails", emails);
 
         return returnValue;
+    }
+
+    public void setProperty(String key, String value) {
+        key = this.IsMappedProperty(key) ? this.getMappedProperty(key) : key;
+        // Use Java reflection to find and set User attribute
+        try {
+            Field field = this.getClass().getDeclaredField(key);
+            field.set(this, value);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            // Error - Do not update field
+        }
     }
 }

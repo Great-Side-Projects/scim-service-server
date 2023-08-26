@@ -1,4 +1,5 @@
 package com.service.scim.services;
+
 import com.service.scim.database.GroupMembershipDatabase;
 import com.service.scim.database.UserDatabase;
 import com.service.scim.models.GroupMembership;
@@ -7,6 +8,7 @@ import com.service.scim.utils.ListResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -24,96 +26,99 @@ public class UsersService implements IUsersService {
 
     @Override
     public Map usersGet(Map<String, String> params) {
-        Page<User> users;
+        PageRequest pageRequest = constructPageRequest(params);
+        Page<User> users = getUsersBasedOnFilter(params, pageRequest);
 
-        // If not given count, default to 100
-        int count = (params.get("count") != null) ? Integer.parseInt(params.get("count")) : 100;
+        ListResponse<User> returnValue = new ListResponse<>(
+                users.getContent(),
+                Optional.of(pageRequest.getPageNumber()),
+                Optional.of(pageRequest.getPageSize()),
+                Optional.of((int)users.getTotalElements())
+        );
 
-        // If not given startIndex, default to 1
-        int startIndex = (params.get("startIndex") != null) ? Integer.parseInt(params.get("startIndex")) : 1;
-
-        if(startIndex < 1){
-            startIndex = 1;
-        }
-        startIndex -=1;
-
-        PageRequest pageRequest = PageRequest.of(startIndex, count);
-
-        String filter = params.get("filter");
-        if (filter != null && filter.contains("eq")) {
-            String regex = "(\\w+) eq \"([^\"]*)\"";
-            Pattern response = Pattern.compile(regex);
-
-            Matcher match = response.matcher(filter);
-            Boolean found = match.find();
-            if (found) {
-                String searchKeyName = match.group(1);
-                String searchValue = match.group(2);
-                switch (searchKeyName) {
-                    case "active":
-                        users = db.findByActive(Boolean.valueOf(searchValue), pageRequest);
-                        break;
-                    case "faimlyName":
-                        users = db.findByFamilyName(searchValue, pageRequest);
-                        break;
-                    case "givenName":
-                        users = db.findByGivenName(searchValue, pageRequest);
-                        break;
-                    default:
-                        // Defaults to username lookup
-                        users = db.findByUsername(searchValue, pageRequest);
-                        break;
-                }
-            } else {
-                users = db.findAll(pageRequest);
-            }
-        } else {
-            users = db.findAll(pageRequest);
-        }
-
-        List<User> foundUsers = users.getContent();
-        int totalResults = foundUsers.size();
-
-        // Convert optional values into Optionals for ListResponse Constructor
-        ListResponse<User> returnValue = new ListResponse<>(foundUsers, Optional.of(startIndex),
-                Optional.of(count), Optional.of(totalResults));
-
-        HashMap<String, Object> res = returnValue.toScimResource();
-        ArrayList<HashMap<String, Object>> resG  = (ArrayList) res.get("Resources");
-        ArrayList<HashMap<String, Object>> resGN = new ArrayList<>();
-
-        for (HashMap<String, Object> u: resG) {
-            PageRequest           pReq = PageRequest.of(0, Integer.MAX_VALUE);
-            Page<GroupMembership> pg   = gmDb.findByUserId(u.get("id").toString(), pReq);
-
-            if (!pg.hasContent()) {
-                continue;
-            }
-
-            List<GroupMembership> gmList = pg.getContent();
-            ArrayList<Map<String, Object>> gms = new ArrayList<>();
-
-            for (GroupMembership gm: gmList) {
-                gms.add(gm.toUserScimResource());
-            }
-
-            u.put("groups", gms);
-            resGN.add(u);
-        }
-
-        res.remove("Resources");
-        res.put("Resources", resG);
-
-        return res;
+        return convertUsersToScimResources(returnValue);
     }
 
     @Override
     public Map usersPost(Map<String, Object> params, HttpServletResponse response) {
-        //realizar validacion de email vacio
+        User newUser = createUser(params);
+        response.setStatus(201);
+        return newUser.toScimResource();
+    }
+
+    private PageRequest constructPageRequest(Map<String, String> params) {
+        int count = Integer.parseInt(params.getOrDefault("count", "100"));
+        int startIndex = Integer.parseInt(params.getOrDefault("startIndex", "1"));
+        startIndex = (startIndex < 1) ? 1 : startIndex - 1;
+
+        return PageRequest.of(startIndex, count);
+    }
+
+
+    private Page<User> getUsersBasedOnFilter(Map<String, String> params, PageRequest pageRequest) {
+        String filter = params.get("filter");
+        if (filter != null && filter.contains("eq")) {
+            String[] keyValue = extractKeyAndValueFromFilter(filter);
+            if (keyValue != null) {
+                return findUsersByKeyAndValue(keyValue[0], keyValue[1], pageRequest);
+            }
+        }
+        return db.findAll(pageRequest);
+    }
+
+    private String[] extractKeyAndValueFromFilter(String filter) {
+        String regex = "(\\w+) eq \"([^\"]*)\"";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher match = pattern.matcher(filter);
+
+        if (match.find()) {
+            return new String[]{match.group(1), match.group(2)};
+        }
+        return null;
+    }
+
+    private Page<User> findUsersByKeyAndValue(String key, String value, PageRequest pageRequest) {
+        switch (key) {
+            case "active":
+                return db.findByActive(Boolean.valueOf(value), pageRequest);
+            case "faimlyName":
+                return db.findByFamilyName(value, pageRequest);
+            case "givenName":
+                return db.findByGivenName(value, pageRequest);
+            default:
+                return db.findByUsername(value, pageRequest);
+        }
+    }
+
+    private Map convertUsersToScimResources(ListResponse<User> usersList) {
+        Map<String, Object> resources = usersList.toScimResource();
+        ArrayList<HashMap<String, Object>> users = (ArrayList) resources.get("Resources");
+
+        for (HashMap<String, Object> user : users) {
+            List<GroupMembership> groupMemberships = findGroupMembershipsForUser(user.get("id").toString());
+            if (!groupMemberships.isEmpty()) {
+                ArrayList<Map<String, Object>> groups = new ArrayList<>();
+                for (GroupMembership gm : groupMemberships) {
+                    groups.add(gm.toUserScimResource());
+                }
+                user.put("groups", groups);
+            }
+        }
+
+        resources.put("Resources", users);
+        return resources;
+    }
+
+    private List<GroupMembership> findGroupMembershipsForUser(String userId) {
+        PageRequest allItemsRequest = PageRequest.of(0, Integer.MAX_VALUE);
+        Page<GroupMembership> page = gmDb.findByUserId(userId, allItemsRequest);
+        return page.getContent();
+    }
+
+    private User createUser(Map<String, Object> params) {
         User newUser = new User(params);
         newUser.id = UUID.randomUUID().toString();
         db.save(newUser);
-        response.setStatus(201);
-        return newUser.toScimResource();
+        return newUser;
     }
 }
