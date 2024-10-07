@@ -16,16 +16,15 @@
 package com.service.scim.models;
 
 import com.service.scim.triggers.UserTrailListener;
-import javax.persistence.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import jakarta.persistence.*;
 import java.lang.reflect.Field;
 import java.util.*;
 
 /**
  * Database schema for {@link User}
  */
-@Entity @EntityListeners(UserTrailListener.class)
+@Entity
+@EntityListeners(UserTrailListener.class)
 @Table(name = "users")
 public class User extends BaseModel {
     /**

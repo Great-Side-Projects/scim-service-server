@@ -2,9 +2,8 @@ package com.service.scim.services;
 
 import com.service.scim.database.UserDatabase;
 import com.service.scim.models.User;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
-
-import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 import static com.service.scim.utils.SCIM.*;

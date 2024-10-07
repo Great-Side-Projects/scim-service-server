@@ -1,10 +1,10 @@
 package com.service.scim.triggers;
 
 import com.service.scim.models.User;
+import jakarta.persistence.PostPersist;
+import jakarta.persistence.PostUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.persistence.PostPersist;
-import javax.persistence.PostUpdate;
 
 
 public class UserTrailListener {

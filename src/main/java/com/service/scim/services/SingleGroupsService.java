@@ -4,11 +4,11 @@ import com.service.scim.database.GroupDatabase;
 import com.service.scim.database.GroupMembershipDatabase;
 import com.service.scim.models.Group;
 import com.service.scim.models.GroupMembership;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 import java.util.*;
 

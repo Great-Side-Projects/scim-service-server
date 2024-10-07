@@ -1,11 +1,7 @@
 package com.service.scim.services;
 
+import jakarta.servlet.http.HttpServletResponse;
 
-
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.Optional;
 
