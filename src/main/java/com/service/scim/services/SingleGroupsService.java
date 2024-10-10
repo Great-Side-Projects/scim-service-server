@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import javax.transaction.Transactional;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -34,7 +35,12 @@ public class SingleGroupsService implements ISingleGroupsService {
     @Override
     public Map singeGroupGet(String id, HttpServletResponse response) {
         try {
-            Group group = db.findById(id).get(0);
+            Group group = db.findById(id).getFirst();
+            if (group == null) {
+                response.setStatus(404);
+                return scimError("Group not found", Optional.of(404));
+            }
+
             HashMap res = group.toScimResource();
 
             PageRequest pageRequest = PageRequest.of(0, Integer.MAX_VALUE);
@@ -42,7 +48,7 @@ public class SingleGroupsService implements ISingleGroupsService {
             List<GroupMembership> gmList = gmPage.getContent();
             ArrayList<Map<String, Object>> gmAL = new ArrayList<>();
 
-            for (GroupMembership gm: gmList) {
+            for (GroupMembership gm : gmList) {
                 gmAL.add(gm.toScimResource());
             }
 
@@ -62,7 +68,26 @@ public class SingleGroupsService implements ISingleGroupsService {
      */
     @Override
     public Map singleGroupPut(Map<String, Object> payload, String id) {
-        Group group = db.findById(id).get(0);
+        Group group = db.findById(id).getFirst();
+        if (group == null) {
+            return scimError("Group not found", Optional.of(404));
+        }
+
+        if (payload.containsKey("members")) {
+            ArrayList<Map<String, Object>> members = (ArrayList<Map<String, Object>>) payload.get("members");
+
+            for (Map<String, Object> member : members) {
+                GroupMembership membership = new GroupMembership(member);
+                if (!gmDb.existsByUserId(membership.userId))
+                {
+                    membership.id = UUID.randomUUID().toString();
+                    membership.groupId = group.id;
+                    membership.groupDisplay = group.displayName;
+                    gmDb.save(membership);
+                }
+            }
+        }
+
         group.update(payload);
         return group.toScimResource();
     }
@@ -75,19 +100,19 @@ public class SingleGroupsService implements ISingleGroupsService {
      */
     @Override
     public Map singleGroupPatch(Map<String, Object> payload, String id) {
-        List schema = (List)payload.get("schemas");
-        List<Map> operations = (List)payload.get("Operations");
+        List schema = (List) payload.get("schemas");
+        List<Map> operations = (List) payload.get("Operations");
 
-        if(schema == null){
+        if (schema == null) {
             return scimError("Payload must contain schema attribute.", Optional.of(400));
         }
-        if(operations == null){
+        if (operations == null) {
             return scimError("Payload must contain operations attribute.", Optional.of(400));
         }
 
         //Verify schema
         String schemaPatchOp = "urn:ietf:params:scim:api:messages:2.0:PatchOp";
-        if (!schema.contains(schemaPatchOp)){
+        if (!schema.contains(schemaPatchOp)) {
             return scimError("The 'schemas' type in this request is not supported.", Optional.of(501));
         }
 
@@ -102,8 +127,8 @@ public class SingleGroupsService implements ISingleGroupsService {
 
         HashMap res = group.toScimResource();
 
-        for(Map map : operations){
-            if(map.get("op")==null){
+        for (Map map : operations) {
+            if (map.get("op") == null) {
                 continue;
             }
 
@@ -131,7 +156,7 @@ public class SingleGroupsService implements ISingleGroupsService {
                 ArrayList<Map<String, Object>> value = (ArrayList) map.get("userId");
 
                 if (value != null && !value.isEmpty()) {
-                    for (Map val: value) {
+                    for (Map val : value) {
                         PageRequest pageRequest = PageRequest.of(0, Integer.MAX_VALUE);
                         Page<GroupMembership> gmPage = gmDb.findByGroupIdAndUserId(id, val.get("userId").toString(), pageRequest);
 
@@ -179,5 +204,30 @@ public class SingleGroupsService implements ISingleGroupsService {
         // Set default to 500
         returnValue.put("status", status_code.orElse(500));
         return returnValue;
+    }
+
+    /**
+     * Deletes {@link Group} with identifier
+     * @param id {@link Group#id}
+     * @param response HTTP Response
+     * @return {@link #scimError(String, Optional)} / JSON {@link Map} of {@link Group}
+     */
+    @Override
+    @Transactional
+    public Map singeGroupDelete(String id, HttpServletResponse response) {
+        try {
+            Group group = db.findById(id).getFirst();
+            if (group == null) {
+                response.setStatus(404);
+                return scimError("Group not found", Optional.of(404));
+            }
+            Page<GroupMembership> toDelete = gmDb.findByGroupId(id, PageRequest.of(0, Integer.MAX_VALUE));
+            gmDb.deleteAll(toDelete);
+            db.delete(group);
+            return group.toScimResource();
+        } catch (Exception e) {
+            response.setStatus(404);
+            return scimError("Group not found", Optional.of(404));
+        }
     }
 }

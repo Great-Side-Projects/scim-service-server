@@ -5,7 +5,6 @@ import com.service.scim.models.User;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 import java.util.*;
-
 import static com.service.scim.utils.SCIM.*;
 
 @Service
@@ -21,7 +20,7 @@ public class SingleUserService implements ISingleUserService {
     public Map singeUserGet(String id, HttpServletResponse response) {
         try {
             //System.out.println(headers);
-            User user = db.findById(id).get(0);
+            User user = db.findById(id).getFirst();
             return user.toScimResource();
 
         } catch (Exception e) {
@@ -32,7 +31,7 @@ public class SingleUserService implements ISingleUserService {
 
     @Override
     public Map singleUserPut(Map<String, Object> payload, String id) {
-        User user = db.findById(id).get(0);
+        User user = db.findById(id).getFirst();
         user.update(payload);
         db.save(user);
         return user.toScimResource();
@@ -63,7 +62,7 @@ public class SingleUserService implements ISingleUserService {
         }
 
         //Find user for update
-        User user = db.findById(id).get(0);
+        User user = db.findById(id).getFirst();
 
         for(Map map : operations){
 

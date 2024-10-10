@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static com.service.scim.utils.SCIM.*;
+
 
 @Service
 public class UsersService implements IUsersService {
@@ -41,6 +43,18 @@ public class UsersService implements IUsersService {
     @Override
     public Map usersPost(Map<String, Object> params, HttpServletResponse response) {
         User newUser = createUser(params);
+
+        if (newUser.email == null || newUser.email.isEmpty()) {
+            response.setStatus(400);
+            return scimError(OPERATIONS_ERROR_MSG + " : email" , Optional.of(400));
+        }
+
+        if (newUser.userName == null || newUser.userName.isEmpty()) {
+            response.setStatus(400);
+            return scimError(OPERATIONS_ERROR_MSG + " : userName" , Optional.of(400));
+        }
+
+        db.save(newUser);
         response.setStatus(201);
         return newUser.toScimResource();
     }
@@ -52,7 +66,6 @@ public class UsersService implements IUsersService {
 
         return PageRequest.of(startIndex, count);
     }
-
 
     private Page<User> getUsersBasedOnFilter(Map<String, String> params, PageRequest pageRequest) {
         String filter = params.get("filter");
@@ -117,7 +130,6 @@ public class UsersService implements IUsersService {
     private User createUser(Map<String, Object> params) {
         User newUser = new User(params);
         newUser.id = UUID.randomUUID().toString();
-        db.save(newUser);
         return newUser;
     }
 }

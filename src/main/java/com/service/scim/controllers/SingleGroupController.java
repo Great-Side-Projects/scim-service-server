@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.*;
 
 /**
@@ -32,7 +31,10 @@ public class SingleGroupController {
      */
     @RequestMapping(method = RequestMethod.GET)
     public @ResponseBody
-    Map singeGroupGet(@PathVariable String id, HttpServletResponse response) {
+    Map singeGroupGet(
+            @PathVariable String id,
+            HttpServletResponse response) {
+
         return singleGroupsService.singeGroupGet(id, response);
     }
 
@@ -43,8 +45,9 @@ public class SingleGroupController {
      * @return JSON {@link Map} of {@link Group}
      */
     @RequestMapping(method = RequestMethod.PUT)
-    public @ResponseBody Map singleGroupPut(@RequestBody Map<String, Object> payload,
-                                            @PathVariable String id) {
+    public @ResponseBody Map singleGroupPut(
+            @RequestBody Map<String, Object> payload,
+            @PathVariable String id) {
         return singleGroupsService.singleGroupPut(payload, id);
     }
 
@@ -55,8 +58,23 @@ public class SingleGroupController {
      * @return  / JSON {@link Map} of {@link Group}
      */
     @RequestMapping(method = RequestMethod.PATCH)
-    public @ResponseBody Map singleGroupPatch(@RequestBody Map<String, Object> payload,
-                                              @PathVariable String id) {
+    public @ResponseBody Map singleGroupPatch(
+            @RequestBody Map<String, Object> payload,
+            @PathVariable String id) {
         return singleGroupsService.singleGroupPatch(payload, id);
+    }
+
+    /**
+     * Delete {@link Group} with identifier
+     * @param id {@link Group#id}
+     * @param response HTTP Response
+     * @return  / JSON {@link Map} of {@link Group}
+     */
+    @RequestMapping(method = RequestMethod.DELETE)
+    public @ResponseBody
+    Map singeGroupDelete(
+            @PathVariable String id,
+            HttpServletResponse response) {
+        return singleGroupsService.singeGroupDelete(id, response);
     }
 }

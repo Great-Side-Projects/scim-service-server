@@ -48,6 +48,9 @@ public interface GroupMembershipDatabase extends JpaRepository<GroupMembership, 
 
     @Query("SELECT gm FROM GroupMembership gm WHERe gm.userId = :userId")
     Page<GroupMembership> findByUserId(@Param("userId") String userId, Pageable pageable);
+    //exists user bay user id bool
+    @Query("SELECT CASE WHEN COUNT(gm) > 0 THEN true ELSE false END FROM GroupMembership gm WHERE gm.userId = :userId")
+    boolean existsByUserId(@Param("userId") String userId);
 
     /**
      * Searches and returns all instances of {@link GroupMembership} that match a given group ID and userId

@@ -10,5 +10,6 @@ public interface ISingleGroupsService {
     Map singleGroupPut(Map<String, Object> payload, String id);
     Map singleGroupPatch(Map<String, Object> payload, String id);
     Map scimError(String message, Optional<Integer> status_code);
+    Map singeGroupDelete(String id, HttpServletResponse response);
 
 }

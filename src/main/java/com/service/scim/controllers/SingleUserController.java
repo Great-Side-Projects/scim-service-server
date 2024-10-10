@@ -1,18 +1,3 @@
-/** Copyright © 2018, Okta, Inc.
- *
- *  Licensed under the MIT license, the "License";
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *     https://opensource.org/licenses/MIT
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-
 package com.service.scim.controllers;
 
 import com.service.scim.database.UserDatabase;
@@ -47,8 +32,10 @@ public class SingleUserController {
      * @return  / JSON {@link Map} of {@link User}
      */
     @RequestMapping(method = RequestMethod.GET)
-    public @ResponseBody Map singeUserGet(@PathVariable String id,  HttpServletResponse response,
-                                          @RequestHeader(required = false) Map<String, String> headers) {
+    public @ResponseBody Map singeUserGet(
+            @PathVariable String id,
+            HttpServletResponse response,
+            @RequestHeader(required = false) Map<String, String> headers) {
 
             //System.out.println(headers);
             return singleUserService.singeUserGet(id, response);
@@ -61,9 +48,10 @@ public class SingleUserController {
      * @return JSON {@link Map} of {@link User}
      */
     @RequestMapping(method = RequestMethod.PUT)
-    public @ResponseBody Map singleUserPut(@RequestBody Map<String, Object> payload,
-                                           @PathVariable String id,
-                                           @RequestHeader(required = false) Map<String, String> headers) {
+    public @ResponseBody Map singleUserPut(
+            @RequestBody Map<String, Object> payload,
+            @PathVariable String id,
+            @RequestHeader(required = false) Map<String, String> headers) {
 
         //System.out.println(headers);
         return singleUserService.singleUserPut(payload, id);
@@ -76,9 +64,10 @@ public class SingleUserController {
      * @return  / JSON {@link Map} of {@link User}
      */
     @RequestMapping(method = RequestMethod.PATCH)
-    public @ResponseBody Map singleUserPatch(@RequestBody Map<String, Object> payload,
-                                             @PathVariable String id,
-                                             @RequestHeader(required = false) Map<String, String> headers) {
+    public @ResponseBody Map singleUserPatch(
+            @RequestBody Map<String, Object> payload,
+            @PathVariable String id,
+            @RequestHeader(required = false) Map<String, String> headers) {
         //System.out.println(headers);
         return singleUserService.singleUserPatch(payload, id);
     }
