@@ -1,6 +1,6 @@
 package com.service.scim.controllers;
 
-import com.service.scim.database.*;
+import com.service.scim.repositories.*;
 import com.service.scim.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

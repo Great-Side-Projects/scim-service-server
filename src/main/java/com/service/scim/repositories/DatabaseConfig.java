@@ -13,7 +13,7 @@
  *  limitations under the License.
  */
 
-package com.service.scim.database;
+package com.service.scim.repositories;
 
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 

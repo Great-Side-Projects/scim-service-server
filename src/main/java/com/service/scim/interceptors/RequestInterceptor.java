@@ -1,6 +1,6 @@
 package com.service.scim.interceptors;
 
-import com.service.scim.database.RequestDatabase;
+import com.service.scim.repositories.RequestDatabase;
 import com.service.scim.models.Request;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

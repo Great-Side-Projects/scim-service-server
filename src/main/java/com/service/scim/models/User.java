@@ -2,7 +2,6 @@ package com.service.scim.models;
 
 import com.service.scim.triggers.UserTrailListener;
 import jakarta.persistence.*;
-import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -21,6 +20,9 @@ public class User extends BaseModel {
     public String id;
 
     public void setActive(Boolean value) {
+        if (value == null) {
+            return;
+        }
         if (!Objects.equals(this.active, value)) {
             this.statusChanged = true;
             this.active = value;
@@ -139,14 +141,14 @@ public class User extends BaseModel {
      * Max length: 250
      */
     @Column(length = 250)
-    public String city;
+    public String locality;
 
     /**
      * The state or province of the user
      * Max length: 250
      */
     @Column(length = 250)
-    public String state;
+    public String region;
 
     /**
      * The organization of the user
@@ -182,7 +184,7 @@ public class User extends BaseModel {
      * Max length: 250
      */
     @Column(length = 250)
-    public String officeLocation;
+    public String postalAddress;
 
     /**
      * The country of the user
@@ -212,16 +214,6 @@ public class User extends BaseModel {
     @Column(length = 250)
     public String postalCode;
 
-    private static Map<String, String> mappedProperty = new HashMap<>();
-
-    private boolean IsMappedProperty(String key) {
-        return this.mappedProperty.containsKey(key);
-    }
-
-    private String getMappedProperty(String Key) {
-        return mappedProperty.get(Key);
-    }
-
     public Boolean getStatusChanged() {
         return this.statusChanged;
     }
@@ -230,30 +222,10 @@ public class User extends BaseModel {
     private Boolean statusChanged = false;
 
     public User() {
-        InitMappedProperty();
     }
 
-    private static void InitMappedProperty() {
-        mappedProperty.put("addresses[type eq \"work\"].formatted", "officeLocation");
-        mappedProperty.put("addresses[type eq \"work\"].streetAddress", "streetAddress");
-        mappedProperty.put("addresses[type eq \"work\"].locality", "city");
-        mappedProperty.put("addresses[type eq \"work\"].postalCode", "postalCode");
-        mappedProperty.put("addresses[type eq \"work\"].country", "country");
-        mappedProperty.put("phoneNumbers[type eq \"work\"].value", "businessPhone");
-        mappedProperty.put("phoneNumbers[type eq \"mobile\"].value", "mobilePhone");
-        mappedProperty.put("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:employeeNumber", "employeeNumber");
-        mappedProperty.put("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department", "department");
-        mappedProperty.put("addresses[type eq \"work\"].region", "state");
-        mappedProperty.put("emails[type eq \"work\"].value", "email");
-        mappedProperty.put("name.givenName", "givenName");
-        mappedProperty.put("name.familyName", "familyName");
-        mappedProperty.put("name.middleName", "middleName");
-        mappedProperty.put("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager", "manager");
-        mappedProperty.put("emails[type eq \"other\"].value", "secondEmail");
-    }
-
-    public User(Map<String, Object> resource) {
-        this.update(resource);
+    public User(Map<String, Object> resource, UserMapper userMapper) {
+        this.update(resource,userMapper);
     }
 
     /**
@@ -261,86 +233,10 @@ public class User extends BaseModel {
      *
      * @param resource JSON {@link Map} of {@link User}
      */
-    public void update(Map<String, Object> resource) {
+    public void update(Map<String, Object> resource, UserMapper userMapper) {
         try {
-            Map<String, Object> names = (Map<String, Object>) resource.get("name");
-
-            for (String subName : names.keySet()) {
-                switch (subName) {
-                    case "givenName":
-                        this.givenName = getMapValue(names, subName);
-                        break;
-                    case "familyName":
-                        this.familyName = getMapValue(names, subName);
-                        break;
-                    case "middleName":
-                        this.middleName = getMapValue(names, subName);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            if (resource.containsKey("emails")) {
-                ((ArrayList) resource.get("emails")).forEach(email -> {
-                    Map<String, Object> e = (Map<String, Object>) email;
-                    if (((Boolean) e.get("primary")))
-                        this.email = getMapValue(e, "value");
-                    if (e.get("type").equals("other"))
-                        this.secondEmail = getMapValue(e, "value");
-                });
-            }
-
-            if (resource.containsKey("phoneNumbers")) {
-                ((ArrayList) resource.get("phoneNumbers")).forEach(phoneNumber -> {
-                    Map<String, Object> phone = (Map<String, Object>) phoneNumber;
-                    if (((Boolean) phone.get("primary")))
-                        this.primaryPhone = getMapValue(phone, "value");
-                    if (phone.get("type").equals("mobile"))
-                        this.mobilePhone = getMapValue(phone, "value");
-                    if (phone.get("type").equals("work"))
-                        this.businessPhone = getMapValue(phone, "value");
-                });
-            }
-
-            if (resource.containsKey("addresses")) {
-                ((ArrayList) resource.get("addresses")).forEach(address -> {
-                    Map<String, Object> a = (Map<String, Object>) address;
-                    //if (((Boolean) a.get("primary")))
-                    this.streetAddress = getMapValue(a, "streetAddress");
-                    this.country = getMapValue(a, "country");
-                    this.city = getMapValue(a, "locality");
-                    this.postalCode = getMapValue(a, "postalCode");
-                    this.state = getMapValue(a, "region");
-                    return;
-                });
-            }
-
-            Map<String, Object> userComapanyData = resource.containsKey("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User") ? (Map<String, Object>) resource.get("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User") : new HashMap<>();
-
-            if (containsKeyMapValue(userComapanyData, "country"))
-                this.country = getMapValue(userComapanyData, "country");
-            if (containsKeyMapValue(userComapanyData, "postalCode"))
-                this.postalCode = getMapValue(userComapanyData, "postalCode");
-
-            this.department = getMapValue(userComapanyData, "department");
-            this.division = getMapValue(userComapanyData, "division");
-            this.employeeNumber = getMapValue(userComapanyData, "employeeNumber");
-
-            this.organization = getMapValue(userComapanyData, "organization");
-
-            if (containsKeyMapValue(userComapanyData, "manager"))
-                this.manager = getMapValue((Map<String, Object>) userComapanyData.get("manager"), "displayName");
-
-            this.userName = resource.get("userName").toString();
+            userMapper.update(this, resource);
             this.setActive((Boolean) resource.get("active"));
-            this.title = getMapValue(resource, "title");
-            this.displayName = getMapValue(resource, "displayName");
-            this.nickName = getMapValue(resource, "nickName");
-            this.profileUrl = getMapValue(resource, "profileUrl");
-            this.secondEmail = getMapValue(resource, "secondEmail");
-            this.locale = getMapValue(resource, "locale");
-            this.officeLocation = getMapValue(userComapanyData, "officeLocation");
-
         } catch (Exception e) {
             //TODO: check exception
             System.out.println(e);
@@ -351,12 +247,9 @@ public class User extends BaseModel {
         return resource.get(key) == null ? null : resource.get(key).toString();
     }
 
-    private static Boolean containsKeyMapValue(Map<String, Object> resource, String key) {
-        return resource.containsKey(key);
-    }
-
     /**
      * Formats JSON {@link Map} response with {@link User} attributes
+     *
      * @return JSON {@link Map} of {@link User}
      */
     @Override
@@ -392,16 +285,5 @@ public class User extends BaseModel {
         returnValue.put("emails", emails);
 
         return returnValue;
-    }
-
-    public void setProperty(String key, String value) {
-        key = this.IsMappedProperty(key) ? this.getMappedProperty(key) : key;
-        // Use Java reflection to find and set User attribute
-        try {
-            Field field = this.getClass().getDeclaredField(key);
-            field.set(this, value);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            // Error - Do not update field
-        }
     }
 }

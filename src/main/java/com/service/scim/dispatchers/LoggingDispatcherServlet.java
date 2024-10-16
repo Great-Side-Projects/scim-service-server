@@ -15,7 +15,7 @@
 
 package com.service.scim.dispatchers;
 
-import com.service.scim.database.TransactionDatabase;
+import com.service.scim.repositories.TransactionDatabase;
 import com.service.scim.models.Transaction;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

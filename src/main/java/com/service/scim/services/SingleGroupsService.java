@@ -1,7 +1,7 @@
 package com.service.scim.services;
 
-import com.service.scim.database.GroupDatabase;
-import com.service.scim.database.GroupMembershipDatabase;
+import com.service.scim.repositories.GroupDatabase;
+import com.service.scim.repositories.GroupMembershipDatabase;
 import com.service.scim.models.Group;
 import com.service.scim.models.GroupMembership;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,7 +26,7 @@ public class SingleGroupsService implements ISingleGroupsService {
     }
 
     /**
-     * Queries database for {@link Group} with identifier
+     * Queries repositories for {@link Group} with identifier
      * Updates response code with '404' if unable to locate {@link Group}
      * @param id {@link Group#id}
      * @param response HTTP Response

@@ -1,7 +1,8 @@
 package com.service.scim.services;
 
-import com.service.scim.database.GroupMembershipDatabase;
-import com.service.scim.database.UserDatabase;
+import com.service.scim.models.UserMapper;
+import com.service.scim.repositories.GroupMembershipDatabase;
+import com.service.scim.repositories.UserDatabase;
 import com.service.scim.models.GroupMembership;
 import com.service.scim.models.User;
 import com.service.scim.utils.ListResponse;
@@ -19,10 +20,12 @@ import static com.service.scim.utils.SCIM.*;
 public class UsersService implements IUsersService {
     private final UserDatabase db;
     private final GroupMembershipDatabase gmDb;
+    private final UserMapper userMapper;
 
-    public UsersService(UserDatabase db, GroupMembershipDatabase gmDb) {
+    public UsersService(UserDatabase db, GroupMembershipDatabase gmDb, UserMapper userMapper) {
         this.db = db;
         this.gmDb = gmDb;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -128,7 +131,7 @@ public class UsersService implements IUsersService {
     }
 
     private User createUser(Map<String, Object> params) {
-        User newUser = new User(params);
+        User newUser = new User(params, userMapper);
         newUser.id = UUID.randomUUID().toString();
         return newUser;
     }

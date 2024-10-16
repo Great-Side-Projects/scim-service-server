@@ -1,6 +1,6 @@
 package com.service.scim.controllers;
 
-import com.service.scim.database.UserDatabase;
+import com.service.scim.repositories.UserDatabase;
 import com.service.scim.models.User;
 import com.service.scim.services.ISingleUserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,7 +25,7 @@ public class SingleUserController {
     }
 
     /**
-     * Queries database for {@link User} with identifier
+     * Queries repositories for {@link User} with identifier
      * Updates response code with '404' if unable to locate {@link User}
      * @param id {@link User#id}
      * @param response HTTP Response

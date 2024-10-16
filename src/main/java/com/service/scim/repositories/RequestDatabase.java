@@ -13,7 +13,7 @@
  *  limitations under the License.
  */
 
-package com.service.scim.database;
+package com.service.scim.repositories;
 
 import com.service.scim.models.Request;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,12 +22,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * Interface for the {@link Request} database
+ * Interface for the {@link Request} repositories
  */
 @Repository
 public interface RequestDatabase extends JpaRepository<Request, Long> {
     /**
-     * Gets a single resource from the database, matching the given ID
+     * Gets a single resource from the repositories, matching the given ID
      * @param id The ID to search for
      * @return The instance of {@link Request} found
      */

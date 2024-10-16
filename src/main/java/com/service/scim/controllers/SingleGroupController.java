@@ -23,7 +23,7 @@ public class SingleGroupController {
     }
 
     /**
-     * Queries database for {@link Group} with identifier
+     * Queries repositories for {@link Group} with identifier
      * Updates response code with '404' if unable to locate {@link Group}
      * @param id {@link Group#id}
      * @param response HTTP Response

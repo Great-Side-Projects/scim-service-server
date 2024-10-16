@@ -13,7 +13,7 @@
  *  limitations under the License.
  */
 
-package com.service.scim.database;
+package com.service.scim.repositories;
 
 import com.service.scim.models.User;
 import org.springframework.data.domain.Page;
@@ -26,12 +26,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * Interface for the {@link User} database
+ * Interface for the {@link User} repositories
  */
 @Repository
 public interface UserDatabase extends JpaRepository<User, Long> {
     /**
-     * Gets a single resource from the database, matching the given ID
+     * Gets a single resource from the repositories, matching the given ID
      * @param id The ID to search for
      * @return The instance of {@link User} found
      */

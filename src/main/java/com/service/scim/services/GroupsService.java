@@ -1,7 +1,7 @@
 package com.service.scim.services;
 
-import com.service.scim.database.GroupDatabase;
-import com.service.scim.database.GroupMembershipDatabase;
+import com.service.scim.repositories.GroupDatabase;
+import com.service.scim.repositories.GroupMembershipDatabase;
 import com.service.scim.models.Group;
 import com.service.scim.models.GroupMembership;
 import com.service.scim.utils.ListResponse;
