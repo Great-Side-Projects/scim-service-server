@@ -1,6 +1,6 @@
 package com.service.scim.interceptors;
 
-import com.service.scim.repositories.IRequestDatabase;
+import com.service.scim.repositories.IRequestRepository;
 import com.service.scim.models.Request;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,9 +16,9 @@ import java.net.URLDecoder;
 @Component
 public class RequestInterceptor implements HandlerInterceptor {
     @Autowired
-    private final IRequestDatabase requestDatabase;
+    private final IRequestRepository requestDatabase;
 
-    public RequestInterceptor(IRequestDatabase requestDatabase) {
+    public RequestInterceptor(IRequestRepository requestDatabase) {
         this.requestDatabase = requestDatabase;
     }
 

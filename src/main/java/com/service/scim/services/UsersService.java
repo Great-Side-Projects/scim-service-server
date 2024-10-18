@@ -1,8 +1,8 @@
 package com.service.scim.services;
 
 import com.service.scim.models.mapper.UserMapper;
-import com.service.scim.repositories.IGroupMembershipDatabase;
-import com.service.scim.repositories.IUserDatabase;
+import com.service.scim.repositories.IGroupMembershipRepository;
+import com.service.scim.repositories.IUserRepository;
 import com.service.scim.models.GroupMembership;
 import com.service.scim.models.User;
 import com.service.scim.services.specifications.UserSpecifications;
@@ -17,12 +17,12 @@ import static com.service.scim.utils.SCIM.*;
 
 @Service
 public class UsersService implements IUsersService {
-    private final IUserDatabase userDatabase;
-    private final IGroupMembershipDatabase groupMembershipDatabase;
+    private final IUserRepository userDatabase;
+    private final IGroupMembershipRepository groupMembershipDatabase;
     private final UserMapper userMapper;
     private final PageRequestBuilder pageRequestBuilder;
 
-    public UsersService(IUserDatabase userDatabase, IGroupMembershipDatabase groupMembershipDatabase, UserMapper userMapper, PageRequestBuilder pageRequestBuilder) {
+    public UsersService(IUserRepository userDatabase, IGroupMembershipRepository groupMembershipDatabase, UserMapper userMapper, PageRequestBuilder pageRequestBuilder) {
         this.userDatabase = userDatabase;
         this.groupMembershipDatabase = groupMembershipDatabase;
         this.userMapper = userMapper;

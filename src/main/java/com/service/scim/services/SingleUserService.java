@@ -1,7 +1,7 @@
 package com.service.scim.services;
 
 import com.service.scim.models.mapper.UserMapper;
-import com.service.scim.repositories.IUserDatabase;
+import com.service.scim.repositories.IUserRepository;
 import com.service.scim.models.User;
 import com.service.scim.utils.MapConverter;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,10 +12,10 @@ import static com.service.scim.utils.SCIM.*;
 @Service
 public class SingleUserService implements ISingleUserService {
 
-    private final IUserDatabase userDatabase;
+    private final IUserRepository userDatabase;
     private final UserMapper userMapper;
 
-    public SingleUserService(IUserDatabase userDatabase, UserMapper userMapper) {
+    public SingleUserService(IUserRepository userDatabase, UserMapper userMapper) {
         this.userDatabase = userDatabase;
         this.userMapper = userMapper;
     }

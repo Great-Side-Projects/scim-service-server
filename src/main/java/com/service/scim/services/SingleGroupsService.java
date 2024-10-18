@@ -1,7 +1,7 @@
 package com.service.scim.services;
 
-import com.service.scim.repositories.IGroupDatabase;
-import com.service.scim.repositories.IGroupMembershipDatabase;
+import com.service.scim.repositories.IGroupRepository;
+import com.service.scim.repositories.IGroupMembershipRepository;
 import com.service.scim.models.Group;
 import com.service.scim.models.GroupMembership;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,11 +16,11 @@ import java.util.*;
 @Service
 public class SingleGroupsService implements ISingleGroupsService {
 
-    IGroupDatabase groupDatabase;
-    IGroupMembershipDatabase groupMembershipDatabase;
+    IGroupRepository groupDatabase;
+    IGroupMembershipRepository groupMembershipDatabase;
 
     @Autowired
-    public SingleGroupsService(IGroupDatabase groupDatabase, IGroupMembershipDatabase groupMembershipDatabase) {
+    public SingleGroupsService(IGroupRepository groupDatabase, IGroupMembershipRepository groupMembershipDatabase) {
         this.groupDatabase = groupDatabase;
         this.groupMembershipDatabase = groupMembershipDatabase;
     }

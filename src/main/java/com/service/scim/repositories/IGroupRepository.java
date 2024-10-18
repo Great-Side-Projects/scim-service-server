@@ -7,14 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
 /**
  * Interface for the {@link Group} repositories
  */
 @Repository
-public interface IGroupDatabase extends JpaRepository<Group, Long> {
+public interface IGroupRepository extends JpaRepository<Group, Long> {
     /**
      * Gets a single resource from the repositories, matching the given ID
      * @param id The ID to search for

@@ -13,7 +13,7 @@ import java.util.List;
  * Interface for the {@link GroupMembership} repositories
  */
 @Repository
-public interface IGroupMembershipDatabase extends JpaRepository<GroupMembership, Long> {
+public interface IGroupMembershipRepository extends JpaRepository<GroupMembership, Long> {
     /**
      * Gets a single resource from the repositories, matching the given ID
      * @param id The ID to search for
