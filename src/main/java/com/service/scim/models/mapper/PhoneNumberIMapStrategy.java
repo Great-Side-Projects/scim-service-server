@@ -1,12 +1,13 @@
-package com.service.scim.models;
+package com.service.scim.models.mapper;
 
+import com.service.scim.models.User;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class PhoneNumberMapStrategy implements MapStrategy {
+public class PhoneNumberIMapStrategy implements IMapStrategy {
 
     @Override
-    public void applyUpdate(User user, String key, Object value) {
+    public void applyUpdate(User user, String field, Object value) {
 
         ((ArrayList) value).forEach(phoneNumber -> {
             Map<String, Object> phone = (Map<String, Object>) phoneNumber;

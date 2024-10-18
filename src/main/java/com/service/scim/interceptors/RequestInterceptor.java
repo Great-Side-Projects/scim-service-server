@@ -1,6 +1,6 @@
 package com.service.scim.interceptors;
 
-import com.service.scim.repositories.RequestDatabase;
+import com.service.scim.repositories.IRequestDatabase;
 import com.service.scim.models.Request;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,7 +16,11 @@ import java.net.URLDecoder;
 @Component
 public class RequestInterceptor implements HandlerInterceptor {
     @Autowired
-    RequestDatabase db;
+    private final IRequestDatabase requestDatabase;
+
+    public RequestInterceptor(IRequestDatabase requestDatabase) {
+        this.requestDatabase = requestDatabase;
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws UnsupportedEncodingException {
@@ -28,7 +32,7 @@ public class RequestInterceptor implements HandlerInterceptor {
 
         request.setAttribute("rid", req.id);
 
-        db.save(req);
+        requestDatabase.save(req);
 
         return true;
     }

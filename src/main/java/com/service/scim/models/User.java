@@ -1,5 +1,6 @@
 package com.service.scim.models;
 
+import com.service.scim.models.mapper.UserMapper;
 import com.service.scim.triggers.UserTrailListener;
 import jakarta.persistence.*;
 import java.util.*;
@@ -225,7 +226,7 @@ public class User extends BaseModel {
     }
 
     public User(Map<String, Object> resource, UserMapper userMapper) {
-        this.update(resource,userMapper);
+        this.update(resource, userMapper);
     }
 
     /**
@@ -235,16 +236,17 @@ public class User extends BaseModel {
      */
     public void update(Map<String, Object> resource, UserMapper userMapper) {
         try {
+
+            if (resource.containsKey("active")) {
+                this.setActive((Boolean) resource.get("active"));
+                resource.remove("active");
+            }
+
             userMapper.update(this, resource);
-            this.setActive((Boolean) resource.get("active"));
         } catch (Exception e) {
             //TODO: check exception
             System.out.println(e);
         }
-    }
-
-    private static String getMapValue(Map<String, Object> resource, String key) {
-        return resource.get(key) == null ? null : resource.get(key).toString();
     }
 
     /**

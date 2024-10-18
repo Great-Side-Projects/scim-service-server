@@ -15,24 +15,24 @@ import java.util.List;
 @Controller
 @RequestMapping("/")
 public class HomeController {
-    private UserDatabase uDb;
-    private GroupDatabase gDb;
-    private TransactionDatabase tDb;
-    private RequestDatabase rDb;
-    private GroupMembershipDatabase gmDb;
+    private IUserDatabase userDatabase;
+    private IGroupDatabase  groupDatabase;
+    private ITransactionDatabase transactionDatabase;
+    private IRequestDatabase requestDatabase;
+    private IGroupMembershipDatabase groupMembershipDatabase;
 
     @Autowired
     public HomeController(
-            UserDatabase uDb,
-            GroupDatabase gDb,
-            TransactionDatabase tDb,
-            RequestDatabase rDb,
-            GroupMembershipDatabase gmDb) {
-        this.uDb = uDb;
-        this.gDb = gDb;
-        this.tDb = tDb;
-        this.rDb = rDb;
-        this.gmDb = gmDb;
+            IUserDatabase userDatabase,
+            IGroupDatabase groupDatabase,
+            ITransactionDatabase transactionDatabase,
+            IRequestDatabase requestDatabase,
+            IGroupMembershipDatabase groupMembershipDatabase) {
+        this.userDatabase = userDatabase;
+        this.groupDatabase = groupDatabase;
+        this.transactionDatabase = transactionDatabase;
+        this.requestDatabase = requestDatabase;
+        this.groupMembershipDatabase = groupMembershipDatabase;
     }
 
     /**
@@ -42,11 +42,11 @@ public class HomeController {
      */
     @RequestMapping(method = RequestMethod.GET)
     public String home(ModelMap model) {
-        List<User> users = uDb.findAll();
-        List<Group> groups = gDb.findAll();
-        List<Transaction> transactions = tDb.findAll();
-        List<Request> requests = rDb.findAll();
-        List<GroupMembership> groupMemberships = gmDb.findAll();
+        List<User> users = userDatabase.findAll();
+        List<Group> groups = groupDatabase.findAll();
+        List<Transaction> transactions = transactionDatabase.findAll();
+        List<Request> requests = requestDatabase.findAll();
+        List<GroupMembership> groupMemberships = groupMembershipDatabase.findAll();
         model.addAttribute("users", users);
         model.addAttribute("groups", groups);
         model.addAttribute("transactions", transactions);

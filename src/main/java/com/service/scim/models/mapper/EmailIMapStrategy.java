@@ -1,12 +1,13 @@
-package com.service.scim.models;
+package com.service.scim.models.mapper;
 
+import com.service.scim.models.User;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class EmailMapStrategy implements MapStrategy {
+public class EmailIMapStrategy implements IMapStrategy {
 
         @Override
-        public void applyUpdate(User user, String key, Object value) {
+        public void applyUpdate(User user, String field, Object value) {
 
             ((ArrayList)value).forEach(email -> {
                 Map<String, Object> values = (Map<String, Object>) email;

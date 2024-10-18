@@ -25,7 +25,7 @@ import java.util.List;
  * Interface for the {@link Transaction} repositories
  */
 @Repository
-public interface TransactionDatabase extends JpaRepository<Transaction, Long> {
+public interface ITransactionDatabase extends JpaRepository<Transaction, Long> {
     /**
      * Gets a single resource from the repositories, matching the given ID
      * @param id The ID to search for

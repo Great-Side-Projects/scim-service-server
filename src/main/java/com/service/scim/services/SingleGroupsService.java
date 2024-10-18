@@ -1,7 +1,7 @@
 package com.service.scim.services;
 
-import com.service.scim.repositories.GroupDatabase;
-import com.service.scim.repositories.GroupMembershipDatabase;
+import com.service.scim.repositories.IGroupDatabase;
+import com.service.scim.repositories.IGroupMembershipDatabase;
 import com.service.scim.models.Group;
 import com.service.scim.models.GroupMembership;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,13 +16,13 @@ import java.util.*;
 @Service
 public class SingleGroupsService implements ISingleGroupsService {
 
-    GroupDatabase db;
-    GroupMembershipDatabase gmDb;
+    IGroupDatabase groupDatabase;
+    IGroupMembershipDatabase groupMembershipDatabase;
 
     @Autowired
-    public SingleGroupsService(GroupDatabase db, GroupMembershipDatabase gmDb) {
-        this.db = db;
-        this.gmDb = gmDb;
+    public SingleGroupsService(IGroupDatabase groupDatabase, IGroupMembershipDatabase groupMembershipDatabase) {
+        this.groupDatabase = groupDatabase;
+        this.groupMembershipDatabase = groupMembershipDatabase;
     }
 
     /**
@@ -35,7 +35,7 @@ public class SingleGroupsService implements ISingleGroupsService {
     @Override
     public Map singeGroupGet(String id, HttpServletResponse response) {
         try {
-            Group group = db.findById(id).getFirst();
+            Group group = groupDatabase.findById(id).getFirst();
             if (group == null) {
                 response.setStatus(404);
                 return scimError("Group not found", Optional.of(404));
@@ -44,7 +44,7 @@ public class SingleGroupsService implements ISingleGroupsService {
             HashMap res = group.toScimResource();
 
             PageRequest pageRequest = PageRequest.of(0, Integer.MAX_VALUE);
-            Page<GroupMembership> gmPage = gmDb.findByGroupId(id, pageRequest);
+            Page<GroupMembership> gmPage = groupMembershipDatabase.findByGroupId(id, pageRequest);
             List<GroupMembership> gmList = gmPage.getContent();
             ArrayList<Map<String, Object>> gmAL = new ArrayList<>();
 
@@ -68,7 +68,7 @@ public class SingleGroupsService implements ISingleGroupsService {
      */
     @Override
     public Map singleGroupPut(Map<String, Object> payload, String id) {
-        Group group = db.findById(id).getFirst();
+        Group group = groupDatabase.findById(id).getFirst();
         if (group == null) {
             return scimError("Group not found", Optional.of(404));
         }
@@ -78,12 +78,12 @@ public class SingleGroupsService implements ISingleGroupsService {
 
             for (Map<String, Object> member : members) {
                 GroupMembership membership = new GroupMembership(member);
-                if (!gmDb.existsByUserId(membership.userId))
+                if (!groupMembershipDatabase.existsByUserId(membership.userId))
                 {
                     membership.id = UUID.randomUUID().toString();
                     membership.groupId = group.id;
                     membership.groupDisplay = group.displayName;
-                    gmDb.save(membership);
+                    groupMembershipDatabase.save(membership);
                 }
             }
         }
@@ -116,14 +116,14 @@ public class SingleGroupsService implements ISingleGroupsService {
             return scimError("The 'schemas' type in this request is not supported.", Optional.of(501));
         }
 
-        int found = db.findById(id).size();
+        int found = groupDatabase.findById(id).size();
 
         if (found == 0) {
             return scimError("Group '" + id + "' was not found.", Optional.of(404));
         }
 
         //Find user for update
-        Group group = db.findById(id).get(0);
+        Group group = groupDatabase.findById(id).get(0);
 
         HashMap res = group.toScimResource();
 
@@ -146,7 +146,7 @@ public class SingleGroupsService implements ISingleGroupsService {
                         }
                     }
 
-                    db.save(group);
+                    groupDatabase.save(group);
                 }
             } else if (map.get("op").equals("add")) {
                 if (!map.get("path").equals("members")) {
@@ -158,7 +158,7 @@ public class SingleGroupsService implements ISingleGroupsService {
                 if (value != null && !value.isEmpty()) {
                     for (Map val : value) {
                         PageRequest pageRequest = PageRequest.of(0, Integer.MAX_VALUE);
-                        Page<GroupMembership> gmPage = gmDb.findByGroupIdAndUserId(id, val.get("userId").toString(), pageRequest);
+                        Page<GroupMembership> gmPage = groupMembershipDatabase.findByGroupIdAndUserId(id, val.get("userId").toString(), pageRequest);
 
                         if (gmPage.hasContent()) {
                             continue;
@@ -167,14 +167,14 @@ public class SingleGroupsService implements ISingleGroupsService {
                         GroupMembership gm = new GroupMembership(val);
                         gm.id = UUID.randomUUID().toString();
                         gm.groupId = id;
-                        gmDb.save(gm);
+                        groupMembershipDatabase.save(gm);
                     }
                 }
             }
         }
 
         PageRequest pageRequest = PageRequest.of(0, Integer.MAX_VALUE);
-        Page<GroupMembership> gms = gmDb.findByGroupId(id, pageRequest);
+        Page<GroupMembership> gms = groupMembershipDatabase.findByGroupId(id, pageRequest);
         List<GroupMembership> gmList = gms.getContent();
         ArrayList<Map<String, Object>> gmAL = new ArrayList<>();
 
@@ -216,14 +216,14 @@ public class SingleGroupsService implements ISingleGroupsService {
     @Transactional
     public Map singeGroupDelete(String id, HttpServletResponse response) {
         try {
-            Group group = db.findById(id).getFirst();
+            Group group = groupDatabase.findById(id).getFirst();
             if (group == null) {
                 response.setStatus(404);
                 return scimError("Group not found", Optional.of(404));
             }
-            Page<GroupMembership> toDelete = gmDb.findByGroupId(id, PageRequest.of(0, Integer.MAX_VALUE));
-            gmDb.deleteAll(toDelete);
-            db.delete(group);
+            Page<GroupMembership> toDelete = groupMembershipDatabase.findByGroupId(id, PageRequest.of(0, Integer.MAX_VALUE));
+            groupMembershipDatabase.deleteAll(toDelete);
+            groupDatabase.delete(group);
             return group.toScimResource();
         } catch (Exception e) {
             response.setStatus(404);

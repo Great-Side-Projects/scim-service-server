@@ -25,7 +25,7 @@ import java.util.List;
  * Interface for the {@link Request} repositories
  */
 @Repository
-public interface RequestDatabase extends JpaRepository<Request, Long> {
+public interface IRequestDatabase extends JpaRepository<Request, Long> {
     /**
      * Gets a single resource from the repositories, matching the given ID
      * @param id The ID to search for

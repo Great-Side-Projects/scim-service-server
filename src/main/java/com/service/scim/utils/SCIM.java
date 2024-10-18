@@ -1,7 +1,6 @@
 package com.service.scim.utils;
 
 import com.service.scim.models.User;
-
 import java.util.*;
 
 public class SCIM {

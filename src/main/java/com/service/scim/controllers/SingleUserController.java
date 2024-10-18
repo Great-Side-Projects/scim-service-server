@@ -1,6 +1,5 @@
 package com.service.scim.controllers;
 
-import com.service.scim.repositories.UserDatabase;
 import com.service.scim.models.User;
 import com.service.scim.services.ISingleUserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,11 +15,12 @@ import java.util.*;
 @RequestMapping("/scim/v2/Users/{id}")
 @CrossOrigin("*")
 public class SingleUserController {
-    UserDatabase db;
     private final ISingleUserService singleUserService;
 
     @Autowired
-    public SingleUserController(UserDatabase db, ISingleUserService singleUserService) {
+    public SingleUserController(
+            ISingleUserService singleUserService)
+    {
         this.singleUserService = singleUserService;
     }
 

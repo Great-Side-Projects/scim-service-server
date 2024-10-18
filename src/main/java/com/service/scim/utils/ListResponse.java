@@ -1,22 +1,7 @@
-/** Copyright © 2018, Okta, Inc.
- *
- *  Licensed under the MIT license, the "License";
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *     https://opensource.org/licenses/MIT
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-
 package com.service.scim.utils;
 
 import com.service.scim.models.BaseModel;
-
+import com.service.scim.models.GroupMembership;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -29,6 +14,7 @@ import java.util.stream.Collectors;
  */
 public class ListResponse<T extends BaseModel> {
     private List<T> list;
+    private List<GroupMembership> groupMemberships;
     private int startIndex;
     private int count;
     private int totalResults;
@@ -40,11 +26,16 @@ public class ListResponse<T extends BaseModel> {
         this.totalResults = 0;
     }
 
-    public ListResponse(List<T> list, Optional<Integer> startIndex,
-                        Optional<Integer> count, Optional<Integer> totalResults){
+    public ListResponse(
+            List<T> list,
+            Optional<Integer> startIndex,
+            Optional<Integer> count,
+            Optional<Integer> totalResults,
+            List<GroupMembership> groupMemberships)
+    {
         this.list = list;
-
-        // startIndex.orElse checks for optional values
+        this.groupMemberships = groupMemberships;
+    // startIndex.orElse checks for optional values
         this.startIndex = startIndex.orElse(1);
         this.count = count.orElse(0);
         this.totalResults = totalResults.orElse(0);
@@ -62,7 +53,19 @@ public class ListResponse<T extends BaseModel> {
         returnValue.put("totalResults", this.totalResults);
         returnValue.put("startIndex", this.startIndex);
 
+
         List<Map> resources = this.list.stream().map(T::toScimResource).collect(Collectors.toList());
+
+        //add group memberships to each user resource
+        if(groupMemberships != null){
+            for(Map<String, Object> resource : resources){
+                List<GroupMembership> memberships = groupMemberships.stream()
+                        .filter(gm -> gm.userId.equals(resource.get("id")))
+                        .toList();
+                List<Map> groupMemberships = memberships.stream().map(GroupMembership::toUserScimResource).collect(Collectors.toList());
+                resource.put("groups", groupMemberships);
+            }
+        }
 
         if (this.count > this.totalResults) {
             this.count = this.totalResults;

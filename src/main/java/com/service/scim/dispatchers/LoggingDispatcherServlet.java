@@ -1,21 +1,6 @@
-/** Copyright © 2018, Okta, Inc.
- *
- *  Licensed under the MIT license, the "License";
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *     https://opensource.org/licenses/MIT
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-
 package com.service.scim.dispatchers;
 
-import com.service.scim.repositories.TransactionDatabase;
+import com.service.scim.repositories.ITransactionDatabase;
 import com.service.scim.models.Transaction;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,7 +21,7 @@ import java.net.URLDecoder;
  */
 public class LoggingDispatcherServlet extends DispatcherServlet {
     @Autowired
-    TransactionDatabase db;
+    ITransactionDatabase transactionDatabase;
 
     private Logger logger = LoggerFactory.getLogger(LoggingDispatcherServlet.class);
 
@@ -63,7 +48,7 @@ public class LoggingDispatcherServlet extends DispatcherServlet {
     }
 
     /**
-     * Creates a {@link Transaction} for a transaction and saves it to the {@link TransactionDatabase}
+     * Creates a {@link Transaction} for a transaction and saves it to the {@link ITransactionDatabase}
      * @param requestToCache The transaction {@link HttpServletRequest}
      * @param responseToCache The transaction {@link HttpServletResponse}
      * @param handler The transaction {@link HandlerExecutionChain}
@@ -80,7 +65,7 @@ public class LoggingDispatcherServlet extends DispatcherServlet {
                 .setResponseBody(getResponsePayload(responseToCache))
                 .setRequestId(requestToCache.getAttribute("rid").toString());
 
-        db.save(req);
+        transactionDatabase.save(req);
     }
 
     /**

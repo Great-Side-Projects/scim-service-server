@@ -6,7 +6,6 @@ import jakarta.persistence.PostUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class UserTrailListener {
 
     private static Logger logger = LoggerFactory.getLogger(UserTrailListener.class);

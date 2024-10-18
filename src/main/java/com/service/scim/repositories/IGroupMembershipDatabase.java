@@ -1,18 +1,3 @@
-/** Copyright © 2018, Okta, Inc.
- *
- *  Licensed under the MIT license, the "License";
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *     https://opensource.org/licenses/MIT
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-
 package com.service.scim.repositories;
 
 import com.service.scim.models.GroupMembership;
@@ -22,14 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
 /**
  * Interface for the {@link GroupMembership} repositories
  */
 @Repository
-public interface GroupMembershipDatabase extends JpaRepository<GroupMembership, Long> {
+public interface IGroupMembershipDatabase extends JpaRepository<GroupMembership, Long> {
     /**
      * Gets a single resource from the repositories, matching the given ID
      * @param id The ID to search for
@@ -48,6 +32,9 @@ public interface GroupMembershipDatabase extends JpaRepository<GroupMembership, 
 
     @Query("SELECT gm FROM GroupMembership gm WHERe gm.userId = :userId")
     Page<GroupMembership> findByUserId(@Param("userId") String userId, Pageable pageable);
+
+    @Query("SELECT gm FROM GroupMembership gm WHERe gm.userId IN(:userIds)")
+    Page<GroupMembership> findByUserIds(@Param("userIds") List<String> userIds, Pageable pageable);
     //exists user bay user id bool
     @Query("SELECT CASE WHEN COUNT(gm) > 0 THEN true ELSE false END FROM GroupMembership gm WHERE gm.userId = :userId")
     boolean existsByUserId(@Param("userId") String userId);

@@ -1,7 +1,7 @@
 package com.service.scim.services;
 
-import com.service.scim.repositories.GroupDatabase;
-import com.service.scim.repositories.GroupMembershipDatabase;
+import com.service.scim.repositories.IGroupDatabase;
+import com.service.scim.repositories.IGroupMembershipDatabase;
 import com.service.scim.models.Group;
 import com.service.scim.models.GroupMembership;
 import com.service.scim.utils.ListResponse;
@@ -17,13 +17,13 @@ import java.util.regex.Pattern;
 @Service
 public class GroupsService implements IGroupsService {
 
-    GroupDatabase db;
-    GroupMembershipDatabase gmDb;
+    IGroupDatabase groupDatabase;
+    IGroupMembershipDatabase groupMembershipDatabase;
 
     @Autowired
-    public GroupsService(GroupDatabase db, GroupMembershipDatabase gmDb) {
-        this.db = db;
-        this.gmDb = gmDb;
+    public GroupsService(IGroupDatabase groupDatabase, IGroupMembershipDatabase groupMembershipDatabase) {
+        this.groupDatabase = groupDatabase;
+        this.groupMembershipDatabase = groupMembershipDatabase;
     }
 
     /**
@@ -59,32 +59,36 @@ public class GroupsService implements IGroupsService {
                 String searchValue = match.group(2);
                 switch (searchKeyName) {
                     case "displayName":
-                        groups = db.findByDisplayname(searchValue, pageRequest);
+                        groups = groupDatabase.findByDisplayname(searchValue, pageRequest);
                         break;
                     default:
-                        groups = db.findByDisplayname(searchValue, pageRequest);
+                        groups = groupDatabase.findByDisplayname(searchValue, pageRequest);
                         break;
                 }
             } else {
-                groups = db.findAll(pageRequest);
+                groups = groupDatabase.findAll(pageRequest);
             }
         } else {
-            groups = db.findAll(pageRequest);
+            groups = groupDatabase.findAll(pageRequest);
         }
 
         List<Group> foundGroups = groups.getContent();
         int totalResults = foundGroups.size();
 
         // Convert optional values into Optionals for ListResponse Constructor
-        ListResponse<Group> returnValue = new ListResponse<>(foundGroups, Optional.of(startIndex),
-                Optional.of(count), Optional.of(totalResults));
+        ListResponse<Group> returnValue = new ListResponse<>(
+                foundGroups,
+                Optional.of(startIndex),
+                Optional.of(count),
+                Optional.of(totalResults),
+                null);
         HashMap<String, Object> res = returnValue.toScimResource();
         ArrayList<HashMap<String, Object>> resG = (ArrayList) res.get("Resources");
         ArrayList<HashMap<String, Object>> resGN = new ArrayList<>();
 
         for (HashMap<String, Object> g: resG) {
             PageRequest pReq = PageRequest.of(0, Integer.MAX_VALUE);
-            Page<GroupMembership> pg = gmDb.findByGroupId(g.get("id").toString(), pReq);
+            Page<GroupMembership> pg = groupMembershipDatabase.findByGroupId(g.get("id").toString(), pReq);
 
             if (!pg.hasContent()) {
                 continue;
@@ -118,7 +122,7 @@ public class GroupsService implements IGroupsService {
         Group newGroup = new Group(params);
 
         newGroup.id = UUID.randomUUID().toString();
-        db.save(newGroup);
+        groupDatabase.save(newGroup);
 
         HashMap<String, Object> res = newGroup.toScimResource();
 
@@ -131,7 +135,7 @@ public class GroupsService implements IGroupsService {
                 membership.groupId = newGroup.id;
                 membership.groupDisplay = newGroup.displayName;
 
-                gmDb.save(membership);
+                groupMembershipDatabase.save(membership);
             }
 
             res.put("members", members);
