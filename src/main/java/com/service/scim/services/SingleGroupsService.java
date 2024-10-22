@@ -1,13 +1,15 @@
 package com.service.scim.services;
 
 import com.service.scim.models.mapper.AbstractEntityMapper;
+import com.service.scim.models.mapper.strategies.patchoperation.IPatchOperationStrategy;
 import com.service.scim.repositories.IGroupRepository;
 import com.service.scim.repositories.IGroupMembershipRepository;
 import com.service.scim.models.Group;
 import com.service.scim.models.GroupMembership;
-import com.service.scim.repositories.IUserRepository;
+import com.service.scim.services.factories.PatchOperationFactory;
 import com.service.scim.utils.MapConverter;
 import com.service.scim.utils.PageRequestBuilder;
+import com.service.scim.utils.PatchRequestValidator;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,7 +17,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // Add this import statement to update
 
-import java.lang.reflect.Field;
 import java.util.*;
 
 import static com.service.scim.utils.SCIM.*;
@@ -25,18 +26,18 @@ public class SingleGroupsService implements ISingleGroupsService {
 
     private final IGroupRepository groupRepository;
     private final IGroupMembershipRepository groupMembershipRepository;
-    private final IUserRepository userRepository;
     private final AbstractEntityMapper<Group> groupEntityMapper;
+    private final PatchOperationFactory patchOperationFactory;
 
     @Autowired
     public SingleGroupsService(IGroupRepository groupRepository,
                                IGroupMembershipRepository groupMembershipRepository,
-                               IUserRepository userRepository, AbstractEntityMapper<Group> groupEntityMapper) {
+                               AbstractEntityMapper<Group> groupEntityMapper, PatchOperationFactory patchOperationFactory) {
 
         this.groupRepository = groupRepository;
         this.groupMembershipRepository = groupMembershipRepository;
-        this.userRepository = userRepository;
         this.groupEntityMapper = groupEntityMapper;
+        this.patchOperationFactory = patchOperationFactory;
     }
 
     /**
@@ -50,19 +51,19 @@ public class SingleGroupsService implements ISingleGroupsService {
     @Override
     public Map singeGroupGet(String id, HttpServletResponse response, Map<String, String> params) {
         try {
-            Group group = groupRepository.findById(id).getFirst();
-            if (group == null) {
+            Optional<Group> group = groupRepository.findById(id);
+            if (!group.isPresent()) {
                 response.setStatus(404);
                 return scimError("Group not found", Optional.of(404));
             }
             //TODO: params exludedAttributes=members
 
-            group.setGroupMemberships(
+            group.get().setGroupMemberships(
                     groupMembershipRepository
                             .findByGroupId(id, PageRequestBuilder.build())
                             .getContent());
 
-            return group.toScimResource();
+            return group.get().toScimResource();
         } catch (Exception e) {
             response.setStatus(404);
             return scimError("Group not found", Optional.of(404));
@@ -79,10 +80,11 @@ public class SingleGroupsService implements ISingleGroupsService {
     @Override
     @Transactional
     public Map singleGroupPut(Map<String, Object> payload, String id) {
-        Group group = groupRepository.findById(id).getFirst();
-        if (group == null) {
+        Optional<Group> ogroup = groupRepository.findById(id);
+        if (!ogroup.isPresent()) {
             return scimError("Group not found", Optional.of(404));
         }
+        Group group = ogroup.get();
 
         // Update group display name if changed in members
         if (!group.displayName.equals(payload.get("displayName"))) {
@@ -119,82 +121,35 @@ public class SingleGroupsService implements ISingleGroupsService {
     @Override
     @Transactional
     public Map singleGroupPatch(Map<String, Object> payload, String id) {
-        List schema = (List) payload.get("schemas");
-        List<Map> operations = (List) payload.get("Operations");
 
-        if (schema == null) {
-            return scimError("Payload must contain schema attribute.", Optional.of(400));
-        }
-        if (operations == null) {
-            return scimError("Payload must contain operations attribute.", Optional.of(400));
+        Map mapValidate = PatchRequestValidator.validate(payload);
+        if (mapValidate != null) {
+            return mapValidate;
         }
 
-        //Verify schema
-        String schemaPatchOp = "urn:ietf:params:scim:api:messages:2.0:PatchOp";
-        if (!schema.contains(schemaPatchOp)) {
-            return scimError("The 'schemas' type in this request is not supported.", Optional.of(501));
-        }
+        Optional<Group> oGroup = groupRepository.findById(id);
 
-        List<Group> grouplist = groupRepository.findById(id);
-
-        if (grouplist.isEmpty()) {
+        if (!oGroup.isPresent()) {
             return scimError("Group '" + id + "' was not found.", Optional.of(404));
         }
-        Group group = grouplist.getFirst();
-
+        Group group = oGroup.get();
         Map<String, Object> groupMapOperations = MapConverter.getMapOperations(payload);
+
+        // Update group display name
         group.update(groupMapOperations, groupEntityMapper);
 
-        String operation = groupMapOperations.get("operation").toString();
-
-        groupMapOperations.forEach((key, value) -> {
-
-            if (key.equals("members")) {
-                List<Map<String, Object>> members = (List<Map<String, Object>>) value;
-                List<String> userIds = members.stream().map(member ->
-                        member.get("value")
-                                .toString()).toList();
-
-                Map<String, String> userNames = userRepository.findUserNamesByIdsMap(userIds);
-                List<GroupMembership> groupMembershipsToAdd = new ArrayList<>();
-                List<GroupMembership> groupMembershipsToRemove = new ArrayList<>();
-
-                members.forEach(member -> {
-
-                    String userId = member.get("value").toString();
-
-                    if (operation.equals("Add")) {
-                        if (groupMembershipRepository.existsByGroupIdAndUserId(group.id, userId)) {
-                            return;
-                        }
-                        GroupMembership gm = new GroupMembership();
-                        gm.id = UUID.randomUUID().toString();
-                        gm.groupId = id;
-                        gm.userId = userId;
-                        gm.groupDisplay = group.displayName;
-                        gm.userDisplay = userNames.get(userId);
-                        groupMembershipsToAdd.add(gm);
-                    } else if (operation.equals("Remove")) {
-                        if (!groupMembershipRepository.existsByGroupIdAndUserId(group.id, userId)) {
-                            return;
-                        }
-                        Page<GroupMembership> groupMembership = groupMembershipRepository.findByGroupIdAndUserId(id, userId, PageRequestBuilder.build());
-
-                        groupMembershipsToRemove.addAll(groupMembership.getContent());
-                    }
-                });
-                if (!groupMembershipsToAdd.isEmpty())
-                    groupMembershipRepository.saveAll(groupMembershipsToAdd);
-                if (!groupMembershipsToRemove.isEmpty())
-                    groupMembershipRepository.deleteAll(groupMembershipsToRemove);
-            }
-        });
+        if (groupMapOperations.containsKey("members")) {
+            List<Map<String, Object>> members = (List<Map<String, Object>>) groupMapOperations.get("members");
+            String operation = groupMapOperations.get("operation").toString();
+            IPatchOperationStrategy strategy = patchOperationFactory.getStrategy(operation);
+            strategy.execute(group, members);
+        }
 
         groupRepository.save(group);
-        group.setGroupMemberships(
-                groupMembershipRepository
-                        .findByGroupId(id, PageRequestBuilder.build())
-                        .getContent());
+
+        group.setGroupMemberships(groupMembershipRepository
+                .findByGroupId(id, PageRequestBuilder.build())
+                .getContent());
 
         return group.toScimResource();
     }
@@ -210,16 +165,16 @@ public class SingleGroupsService implements ISingleGroupsService {
     @Transactional
     public Map singeGroupDelete(String id, HttpServletResponse response) {
         try {
-            Group group = groupRepository.findById(id).getFirst();
-            if (group == null) {
+            Optional<Group> group = groupRepository.findById(id);
+            if (!group.isPresent()) {
                 response.setStatus(404);
                 return scimError("Group not found", Optional.of(404));
             }
             Page<GroupMembership> toDelete = groupMembershipRepository.findByGroupId(id, PageRequest.of(0, Integer.MAX_VALUE));
             groupMembershipRepository.deleteAll(toDelete);
-            groupRepository.delete(group);
+            groupRepository.delete(group.get());
             response.setStatus(204);
-            return group.toScimResource();
+            return group.get().toScimResource();
         } catch (Exception e) {
             response.setStatus(404);
             return scimError("Group not found", Optional.of(404));

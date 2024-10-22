@@ -1,7 +1,7 @@
 package com.service.scim.models.mapper;
 
-
-
+import com.service.scim.models.mapper.strategies.fields.IMapStrategy;
+import com.service.scim.models.mapper.strategies.entities.UpdateStrategy;
 import java.util.Map;
 
 public abstract class AbstractEntityMapper<T> {

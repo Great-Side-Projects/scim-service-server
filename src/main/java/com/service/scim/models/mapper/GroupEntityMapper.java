@@ -1,6 +1,8 @@
 package com.service.scim.models.mapper;
 
 import com.service.scim.models.Group;
+import com.service.scim.models.mapper.strategies.fields.GenericMapStrategy;
+import com.service.scim.models.mapper.strategies.fields.IMapStrategy;
 import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;

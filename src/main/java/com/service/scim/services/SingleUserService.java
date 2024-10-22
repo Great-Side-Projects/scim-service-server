@@ -24,7 +24,7 @@ public class SingleUserService implements ISingleUserService {
     public Map singeUserGet(String id, HttpServletResponse response) {
         try {
             //System.out.println(headers);
-            User user = userDatabase.findById(id).getFirst();
+            User user = userDatabase.findById(id).get();
             return user.toScimResource();
 
         } catch (Exception e) {
@@ -35,7 +35,7 @@ public class SingleUserService implements ISingleUserService {
 
     @Override
     public Map singleUserPut(Map<String, Object> payload, String id) {
-        User user = userDatabase.findById(id).getFirst();
+        User user = userDatabase.findById(id).get();
         user.update(payload, userEntityMapper);
         userDatabase.save(user);
         return user.toScimResource();
@@ -61,16 +61,16 @@ public class SingleUserService implements ISingleUserService {
         }
 
         //Find user for update
-        User user = userDatabase.findById(id).getFirst();
+        Optional<User> user = userDatabase.findById(id);
 
-        if (user == null) {
+        if (user.isPresent()) {
             return scimError(String.format(USER_NOT_FOUND, id), Optional.of(404));
         }
 
         Map<String, Object> userMapOperations = MapConverter.getMapOperations(payload);
-        user.update(userMapOperations, userEntityMapper);
-        userDatabase.save(user);
+        user.get().update(userMapOperations, userEntityMapper);
+        userDatabase.save(user.get());
 
-        return user.toScimResource();
+        return user.get().toScimResource();
     }
 }

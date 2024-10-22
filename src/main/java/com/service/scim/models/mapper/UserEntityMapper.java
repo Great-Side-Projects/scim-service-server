@@ -1,6 +1,7 @@
 package com.service.scim.models.mapper;
 
 import com.service.scim.models.User;
+import com.service.scim.models.mapper.strategies.fields.*;
 import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;

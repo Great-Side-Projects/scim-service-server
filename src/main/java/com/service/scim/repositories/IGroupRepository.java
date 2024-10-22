@@ -8,19 +8,21 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import java.util.List;
+
+import java.util.Optional;
 
 /**
  * Interface for the {@link Group} repositories
  */
 @Repository
-public interface IGroupRepository extends JpaRepository<Group, Long>, JpaSpecificationExecutor<Group> {
+public interface IGroupRepository extends JpaRepository<Group, String>, JpaSpecificationExecutor<Group> {
     /**
      * Gets a single resource from the repositories, matching the given ID
+     *
      * @param id The ID to search for
      * @return The instance of {@link Group} found
      */
-    List<Group> findById(String id);
+    Optional<Group> findById(String id);
 
     /**
      * Searches and returns all instances of {@link Group} that match a given userDisplay name

@@ -1,11 +1,11 @@
-package com.service.scim.models.mapper;
+package com.service.scim.models.mapper.strategies.fields;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GenericMapStrategy<T> implements IMapStrategy<T>{
+public class GenericMapStrategy<T> implements IMapStrategy<T> {
 
     private static final Map<String, String> mappedProperty = new HashMap<>();
     private static final ArrayList<String> declaredFields = new ArrayList<>();

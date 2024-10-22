@@ -1,4 +1,6 @@
-package com.service.scim.models.mapper;
+package com.service.scim.models.mapper.strategies.entities;
+
+import com.service.scim.models.mapper.strategies.fields.IMapStrategy;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -13,7 +15,7 @@ public class UpdateStrategy<T> {
         this.defaultGenericMapStrategy = defaultGenericMapStrategy;
     }
 
-    void update(T entity, Map<String, Object> resource) {
+    public void update(T entity, Map<String, Object> resource) {
         resource.forEach((field, value) -> {
 
             IsMapRecursively(entity, value);

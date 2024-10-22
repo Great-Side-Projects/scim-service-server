@@ -7,21 +7,22 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ClientInfoStatus;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Interface for the {@link User} repositories
  */
 @Repository
-public interface IUserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
+public interface IUserRepository extends JpaRepository<User, String>, JpaSpecificationExecutor<User> {
     /**
      * Gets a single resource from the repositories, matching the given ID
+     *
      * @param id The ID to search for
      * @return The instance of {@link User} found
      */
-    List<User> findById(String id);
+    Optional<User> findById(String id);
 
 
     // get only usernames by ids , result in map id, username

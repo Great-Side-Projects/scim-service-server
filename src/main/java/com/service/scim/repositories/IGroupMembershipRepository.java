@@ -9,18 +9,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Interface for the {@link GroupMembership} repositories
  */
 @Repository
-public interface IGroupMembershipRepository extends JpaRepository<GroupMembership, Long> {
+public interface IGroupMembershipRepository extends JpaRepository<GroupMembership, String> {
     /**
      * Gets a single resource from the repositories, matching the given ID
+     *
      * @param id The ID to search for
      * @return The instance of {@link GroupMembership} found
      */
-    List<GroupMembership> findById(String id);
+    Optional<GroupMembership> findById(String id);
 
     /**
      * Searches and returns all instances of {@link GroupMembership} that match a given group ID
