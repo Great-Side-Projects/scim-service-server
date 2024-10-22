@@ -12,7 +12,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 @SpringBootApplication
 public class ScimServiceServerApplication {
-    private static Logger logger = LoggerFactory.getLogger(ScimServiceServerApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScimServiceServerApplication.class);
 
     public static void main(String[] args) {
         SpringApplication.run(ScimServiceServerApplication.class, args);

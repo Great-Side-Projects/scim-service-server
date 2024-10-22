@@ -31,5 +31,5 @@ public interface IGroupRepository extends JpaRepository<Group, String>, JpaSpeci
      * @return A {@link Page} object with the found {@link Group} instances
      */
     @Query("SELECT g FROM Group g WHERE g.displayName = :name")
-    Page<Group> findByDisplayname(@Param("name") String name, Pageable pagable);
+    Page<Group> findByDisplayName(@Param("name") String name, Pageable pagable);
 }

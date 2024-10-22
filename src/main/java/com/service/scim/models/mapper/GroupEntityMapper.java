@@ -16,13 +16,12 @@ public class GroupEntityMapper extends AbstractEntityMapper<Group> {
 
     @Override
     protected Map<String, IMapStrategy<Group>> initializeStrategies() {
-        Map<String, IMapStrategy<Group>> strategy = new HashMap<>();
+        // add the strategies for the Group fields here
         //strategy.put("members", new MemberMapStrategy());
-        return strategy;
+        return new HashMap<>();
     }
     @Override
     public final void update(Group entity, Map<String, Object> resource) {
         super.update(entity, resource);
     }
-
 }

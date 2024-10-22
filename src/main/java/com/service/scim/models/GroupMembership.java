@@ -36,10 +36,6 @@ public class GroupMembership extends BaseModel {
 
     public GroupMembership() {}
 
-    public GroupMembership(Map<String, Object> resource){
-        this.update(resource);
-    }
-
     public GroupMembership(Map<String, Object> resource, String groupId, String groupDisplay){
         this.update(resource);
         this.groupId = groupId;
@@ -56,7 +52,7 @@ public class GroupMembership extends BaseModel {
             this.userId = resource.get("value").toString();
             this.userDisplay = resource.getOrDefault("display", "").toString();
         } catch(Exception e) {
-            System.out.println(e);
+            System.out.println("Error updating fields groupmembership: " + e);
         }
     }
 

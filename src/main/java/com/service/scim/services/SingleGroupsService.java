@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // Add this import statement to update
+
 import java.util.*;
 
 import static com.service.scim.utils.SCIM.*;
@@ -45,17 +46,20 @@ public class SingleGroupsService implements ISingleGroupsService {
      *
      * @param id       {@link Group#id}
      * @param response HTTP Response
-     * @return {@link #scimError(String, Optional)} / JSON {@link Map} of {@link Group}
+     * @return {@link Map} of {@link Group}
      */
     @Override
     public Map singeGroupGet(String id, HttpServletResponse response, Map<String, String> params) {
         try {
             Optional<Group> group = groupRepository.findById(id);
-            if (!group.isPresent()) {
+            if (group.isEmpty()) {
                 response.setStatus(404);
                 return scimError("Group not found", Optional.of(404));
             }
-            //TODO: params exludedAttributes=members
+
+            if (params.containsKey("excludedAttributes") && params.get("excludedAttributes").equals("members")) {
+                return group.get().toScimResource();
+            }
 
             group.get().setGroupMemberships(
                     groupMembershipRepository
@@ -79,11 +83,11 @@ public class SingleGroupsService implements ISingleGroupsService {
     @Override
     @Transactional
     public Map singleGroupPut(Map<String, Object> payload, String id) {
-        Optional<Group> ogroup = groupRepository.findById(id);
-        if (!ogroup.isPresent()) {
+        Optional<Group> oGroup = groupRepository.findById(id);
+        if (oGroup.isEmpty()) {
             return scimError("Group not found", Optional.of(404));
         }
-        Group group = ogroup.get();
+        Group group = oGroup.get();
 
         // Update group display name if changed in members
         if (!group.displayName.equals(payload.get("displayName"))) {
@@ -115,7 +119,7 @@ public class SingleGroupsService implements ISingleGroupsService {
      *
      * @param payload Payload from HTTP request
      * @param id      {@link Group#id}
-     * @return {@link #scimError(String, Optional)} / JSON {@link Map} of {@link Group}
+     * @return JSON {@link Map} of {@link Group}
      */
     @Override
     @Transactional
@@ -128,7 +132,7 @@ public class SingleGroupsService implements ISingleGroupsService {
 
         Optional<Group> oGroup = groupRepository.findById(id);
 
-        if (!oGroup.isPresent()) {
+        if (oGroup.isEmpty()) {
             return scimError("Group '" + id + "' was not found.", Optional.of(404));
         }
         Group group = oGroup.get();
@@ -159,14 +163,15 @@ public class SingleGroupsService implements ISingleGroupsService {
      *
      * @param id       {@link Group#id}
      * @param response HTTP Response
-     * @return {@link #scimError(String, Optional)} / JSON {@link Map} of {@link Group}
+     * @return JSON {@link Map} of {@link Group}
      */
     @Override
     @Transactional
     public Map singeGroupDelete(String id, HttpServletResponse response) {
         try {
+
             Optional<Group> group = groupRepository.findById(id);
-            if (!group.isPresent()) {
+            if (group.isEmpty()) {
                 response.setStatus(404);
                 return scimError("Group not found", Optional.of(404));
             }

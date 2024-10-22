@@ -8,13 +8,12 @@ import org.slf4j.LoggerFactory;
 
 public class UserTrailListener {
 
-    private static Logger logger = LoggerFactory.getLogger(UserTrailListener.class);
+    private final static Logger logger = LoggerFactory.getLogger(UserTrailListener.class);
 
     //cunado se genere la creacion de un usuario en la base de datos interna se lanzara este trigger como respuesta
     @PostPersist
     private void afterCreation(User user)
     {
-
         System.out.println("Ususario creado: id:"+user.id);
         logger.info("Ususario Creado: id:"+user.id);
     }
@@ -37,8 +36,5 @@ public class UserTrailListener {
                 System.out.println("Ususario desactivado: id:" + user.id);
                 logger.info("Ususario desactivado: id:" + user.id);
             }
-
-
-
     }
 }

@@ -63,7 +63,7 @@ public class GroupsService implements IGroupsService {
     /**
      * Creates new {@link Group} with given attributes
      *
-     * @param params   JSON {@link Map} of {@link Group} attributes
+     * @param body JSON {@link Map} of {@link Group} attributes
      * @param response HTTP response
      * @return JSON {@link Map} of {@link Group}
      */

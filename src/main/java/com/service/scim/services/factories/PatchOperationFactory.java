@@ -17,7 +17,7 @@ public class PatchOperationFactory {
     public PatchOperationFactory(IGroupMembershipRepository groupMembershipRepository, IUserRepository userRepository) {
         this.strategies = Map.of(
                 "Add", new AddMembersStrategy(groupMembershipRepository, userRepository),
-                "Remove", new RemoveMembersStrategy(groupMembershipRepository, userRepository)
+                "Remove", new RemoveMembersStrategy(groupMembershipRepository)
         );
     }
 

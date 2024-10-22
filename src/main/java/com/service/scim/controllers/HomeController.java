@@ -15,11 +15,11 @@ import java.util.List;
 @Controller
 @RequestMapping("/")
 public class HomeController {
-    private IUserRepository userDatabase;
-    private IGroupRepository groupDatabase;
-    private ITransactionRepository transactionDatabase;
-    private IRequestRepository requestDatabase;
-    private IGroupMembershipRepository groupMembershipDatabase;
+    private final IUserRepository userDatabase;
+    private final IGroupRepository groupDatabase;
+    private final ITransactionRepository transactionDatabase;
+    private final IRequestRepository requestDatabase;
+    private final IGroupMembershipRepository groupMembershipDatabase;
 
     @Autowired
     public HomeController(

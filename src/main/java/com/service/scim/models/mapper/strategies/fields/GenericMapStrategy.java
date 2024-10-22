@@ -64,7 +64,7 @@ public class GenericMapStrategy<T> implements IMapStrategy<T> {
             Field classfield = entity.getClass().getDeclaredField(field);
             classfield.set(entity, value);
         } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
-            System.out.println(e);
+            System.out.println("Error - Do not update field: " + e);
             // Error - Do not update field
         }
     }

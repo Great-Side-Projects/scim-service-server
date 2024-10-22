@@ -23,29 +23,31 @@ public class SingleUserService implements ISingleUserService {
 
     @Override
     public Map singeUserGet(String id, HttpServletResponse response) {
-        try {
             //System.out.println(headers);
-            User user = userDatabase.findById(id).get();
-            return user.toScimResource();
+            Optional<User> user = userDatabase.findById(id);
+            if (user.isEmpty()) {
+                response.setStatus(404);
+                return scimError(USER_NOT_FOUND_MSG, Optional.of(404));
+            }
 
-        } catch (Exception e) {
-            response.setStatus(404);
-            return scimError(USER_NOT_FOUND_MSG, Optional.of(404));
-        }
+            return user.get().toScimResource();
     }
 
     @Override
     public Map singleUserPut(Map<String, Object> payload, String id) {
-        User user = userDatabase.findById(id).get();
-        user.update(payload, userEntityMapper);
-        userDatabase.save(user);
-        return user.toScimResource();
+        Optional<User> user = userDatabase.findById(id);
+
+        if (user.isEmpty()) {
+            return scimError(String.format(USER_NOT_FOUND, id), Optional.of(404));
+        }
+
+        user.get().update(payload, userEntityMapper);
+        userDatabase.save(user.get());
+        return user.get().toScimResource();
     }
 
     @Override
     public Map singleUserPatch(Map<String, Object> payload, String id) {
-        List schema = (List) payload.get("schemas");
-        List<Map> operations = (List) payload.get("Operations");
 
         Map validationResult = PatchRequestValidator.validate(payload);
         if (validationResult != null) {
@@ -55,7 +57,7 @@ public class SingleUserService implements ISingleUserService {
         //Find user for update
         Optional<User> user = userDatabase.findById(id);
 
-        if (user.isPresent()) {
+        if (user.isEmpty()) {
             return scimError(String.format(USER_NOT_FOUND, id), Optional.of(404));
         }
 

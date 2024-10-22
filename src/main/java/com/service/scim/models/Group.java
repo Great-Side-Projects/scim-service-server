@@ -1,7 +1,6 @@
 package com.service.scim.models;
 
 import com.service.scim.models.mapper.AbstractEntityMapper;
-import com.service.scim.models.mapper.GroupEntityMapper;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +52,7 @@ public class Group extends BaseModel {
                 this.displayName = resource.get("displayName").toString();
             groupEntityMapper.update(this, resource);
         } catch(Exception e) {
-            System.out.println(e);
+            System.out.println("Error updating fields group: " + e);
         }
     }
 

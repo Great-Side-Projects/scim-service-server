@@ -21,9 +21,7 @@ public class UpdateStrategy<T> {
             IsMapRecursively(entity, value);
             // Check if the value is a list or a map and call the update method recursively
             if (value instanceof ArrayList<?> MyArrayList) {
-                MyArrayList.forEach(subResource -> {
-                    IsMapRecursively(entity, subResource);
-                });
+                MyArrayList.forEach(subResource -> IsMapRecursively(entity, subResource));
             }
             IMapStrategy<T> strategy = strategies.getOrDefault(field, defaultGenericMapStrategy);
             strategy.applyUpdate(entity, field, value);
