@@ -54,7 +54,7 @@ public class GroupMembership extends BaseModel {
     public void update(Map<String, Object> resource) {
         try{
             this.userId = resource.get("value").toString();
-            this.userDisplay = resource.get("display").toString();
+            this.userDisplay = resource.getOrDefault("display", "").toString();
         } catch(Exception e) {
             System.out.println(e);
         }

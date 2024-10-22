@@ -16,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // Add this import statement to update
-
 import java.util.*;
 
 import static com.service.scim.utils.SCIM.*;
@@ -138,6 +137,7 @@ public class SingleGroupsService implements ISingleGroupsService {
         // Update group display name
         group.update(groupMapOperations, groupEntityMapper);
 
+        // Add or delete members from group if they do not exist in the group already
         if (groupMapOperations.containsKey("members")) {
             List<Map<String, Object>> members = (List<Map<String, Object>>) groupMapOperations.get("members");
             String operation = groupMapOperations.get("operation").toString();

@@ -35,20 +35,12 @@ public class AddMembersStrategy implements IPatchOperationStrategy<Group> {
         members.forEach(member -> {
             String userId = member.get("value").toString();
             if (!groupMembershipRepository.existsByGroupIdAndUserId(group.id, userId) && userRepository.existsById(userId)) {
-                GroupMembership membership = createMembership(group, userId, userNames.get(userId));
+                //GroupMembership membership = createMembership(group, userId, userNames.get(userId));
+                GroupMembership membership = new GroupMembership(member, group.id, group.displayName);
+                membership.userDisplay = userNames.get(userId);
                 membershipsToAdd.add(membership);
             }
         });
         return membershipsToAdd;
-    }
-
-    private GroupMembership createMembership(Group group, String userId, String userDisplay) {
-        GroupMembership gm = new GroupMembership();
-        gm.id = UUID.randomUUID().toString();
-        gm.groupId = group.id;
-        gm.userId = userId;
-        gm.groupDisplay = group.displayName;
-        gm.userDisplay = userDisplay;
-        return gm;
     }
 }

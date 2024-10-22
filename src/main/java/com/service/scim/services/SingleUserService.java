@@ -4,6 +4,7 @@ import com.service.scim.models.mapper.UserEntityMapper;
 import com.service.scim.repositories.IUserRepository;
 import com.service.scim.models.User;
 import com.service.scim.utils.MapConverter;
+import com.service.scim.utils.PatchRequestValidator;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -46,18 +47,9 @@ public class SingleUserService implements ISingleUserService {
         List schema = (List) payload.get("schemas");
         List<Map> operations = (List) payload.get("Operations");
 
-        //Verify schema
-        if (schema == null) {
-            return scimError(SCHEMA_ERROR_MSG, Optional.of(400));
-        }
-
-        if (operations == null) {
-            return scimError(OPERATIONS_ERROR_MSG, Optional.of(400));
-        }
-
-        String schemaPatchOp = "urn:ietf:params:scim:api:messages:2.0:PatchOp";
-        if (!schema.contains(schemaPatchOp)) {
-            return scimError(SCHEMA_NOT_SUPPORTED_MSG, Optional.of(501));
+        Map validationResult = PatchRequestValidator.validate(payload);
+        if (validationResult != null) {
+            return validationResult;
         }
 
         //Find user for update
