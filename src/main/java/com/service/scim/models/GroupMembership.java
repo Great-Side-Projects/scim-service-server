@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Database schema for {@link GroupMembership}
@@ -37,6 +38,13 @@ public class GroupMembership extends BaseModel {
 
     public GroupMembership(Map<String, Object> resource){
         this.update(resource);
+    }
+
+    public GroupMembership(Map<String, Object> resource, String groupId, String groupDisplay){
+        this.update(resource);
+        this.groupId = groupId;
+        this.id = UUID.randomUUID().toString();
+        this.groupDisplay = groupDisplay;
     }
 
     /**

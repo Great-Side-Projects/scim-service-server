@@ -1,11 +1,11 @@
 package com.service.scim.services;
 
-import com.service.scim.models.mapper.UserMapper;
+import com.service.scim.models.mapper.UserEntityMapper;
 import com.service.scim.repositories.IGroupMembershipRepository;
 import com.service.scim.repositories.IUserRepository;
 import com.service.scim.models.GroupMembership;
 import com.service.scim.models.User;
-import com.service.scim.services.specifications.UserSpecifications;
+import com.service.scim.services.specifications.Specifications;
 import com.service.scim.utils.ListResponse;
 import com.service.scim.utils.PageRequestBuilder;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,26 +17,25 @@ import static com.service.scim.utils.SCIM.*;
 
 @Service
 public class UsersService implements IUsersService {
-    private final IUserRepository userDatabase;
-    private final IGroupMembershipRepository groupMembershipDatabase;
-    private final UserMapper userMapper;
-    private final PageRequestBuilder pageRequestBuilder;
+    private final IUserRepository userRepository;
+    private final IGroupMembershipRepository groupMembershipRepository;
+    private final UserEntityMapper userEntityMapper;
 
-    public UsersService(IUserRepository userDatabase, IGroupMembershipRepository groupMembershipDatabase, UserMapper userMapper, PageRequestBuilder pageRequestBuilder) {
-        this.userDatabase = userDatabase;
-        this.groupMembershipDatabase = groupMembershipDatabase;
-        this.userMapper = userMapper;
-        this.pageRequestBuilder = pageRequestBuilder;
+    public UsersService(IUserRepository userRepository,
+                        IGroupMembershipRepository groupMembershipRepository,
+                        UserEntityMapper userEntityMapper) {
+        this.userRepository = userRepository;
+        this.groupMembershipRepository = groupMembershipRepository;
+        this.userEntityMapper = userEntityMapper;
     }
 
     @Override
     public Map usersGet(Map<String, String> params) {
-        PageRequest pageRequest = pageRequestBuilder.build(params);
-        Page<User> users = userDatabase.findAll(UserSpecifications.createUserSpecification(params), pageRequest);
+        PageRequest pageRequest = PageRequestBuilder.build(params);
+        Page<User> users = userRepository.findAll(Specifications.createSpecification(params), pageRequest);
 
-        //get users ids
         List<String> userIds = users.getContent().stream().map(user -> user.id).toList();
-        Page<GroupMembership> groupMemberships = groupMembershipDatabase.findByUserIds(userIds, pageRequestBuilder.build());
+        Page<GroupMembership> groupMemberships = groupMembershipRepository.findByUserIds(userIds, PageRequestBuilder.build());
 
         ListResponse<User> returnValue = new ListResponse<>(
                 users.getContent(),
@@ -50,8 +49,8 @@ public class UsersService implements IUsersService {
     }
 
     @Override
-    public Map usersPost(Map<String, Object> params, HttpServletResponse response) {
-        User newUser = new User(params, userMapper);
+    public Map usersPost(Map<String, Object> body, HttpServletResponse response) {
+        User newUser = new User(body, userEntityMapper);
         newUser.id = UUID.randomUUID().toString();
 
         if (newUser.email == null || newUser.email.isEmpty()) {
@@ -64,7 +63,7 @@ public class UsersService implements IUsersService {
             return scimError(OPERATIONS_ERROR_MSG + " : userName", Optional.of(400));
         }
 
-        userDatabase.save(newUser);
+        userRepository.save(newUser);
         response.setStatus(201);
         return newUser.toScimResource();
     }

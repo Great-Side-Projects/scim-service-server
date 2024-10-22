@@ -40,15 +40,15 @@ public class UsersController {
 
     /**
      * Creates new {@link User} with given attributes
-     * @param params JSON {@link Map} of {@link User} attributes
+     * @param body JSON {@link Map} of {@link User} attributes
      * @param response HTTP response
      * @return JSON {@link Map} of {@link User}
      */
     @RequestMapping(method = RequestMethod.POST)
     public @ResponseBody Map usersPost(
-            @RequestBody Map<String, Object> params,
+            @RequestBody Map<String, Object> body,
             HttpServletResponse response){
 
-        return usersService.usersPost(params, response);
+        return usersService.usersPost(body, response);
     }
 }

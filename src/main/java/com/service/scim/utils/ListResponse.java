@@ -2,6 +2,8 @@ package com.service.scim.utils;
 
 import com.service.scim.models.BaseModel;
 import com.service.scim.models.GroupMembership;
+import com.service.scim.models.User;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -19,7 +21,7 @@ public class ListResponse<T extends BaseModel> {
     private int count;
     private int totalResults;
 
-    public ListResponse(){
+    public ListResponse() {
         this.list = new ArrayList<>();
         this.startIndex = 1;
         this.count = 0;
@@ -31,11 +33,10 @@ public class ListResponse<T extends BaseModel> {
             Optional<Integer> startIndex,
             Optional<Integer> count,
             Optional<Integer> totalResults,
-            List<GroupMembership> groupMemberships)
-    {
+            List<GroupMembership> groupMemberships) {
         this.list = list;
         this.groupMemberships = groupMemberships;
-    // startIndex.orElse checks for optional values
+        // startIndex.orElse checks for optional values
         this.startIndex = startIndex.orElse(1);
         this.count = count.orElse(0);
         this.totalResults = totalResults.orElse(0);
@@ -44,7 +45,7 @@ public class ListResponse<T extends BaseModel> {
     /**
      * @return JSON {@link Map} of {@link ListResponse} object
      */
-    public HashMap<String, Object> toScimResource(){
+    public HashMap<String, Object> toScimResource() {
         HashMap<String, Object> returnValue = new HashMap<>();
 
         List<String> schemas = new ArrayList<>();
@@ -56,14 +57,30 @@ public class ListResponse<T extends BaseModel> {
 
         List<Map> resources = this.list.stream().map(T::toScimResource).collect(Collectors.toList());
 
+        //TODO: Refactor this to a more generic way
         //add group memberships to each user resource
-        if(groupMemberships != null){
-            for(Map<String, Object> resource : resources){
+        if (groupMemberships != null || !groupMemberships.isEmpty()) {
+            for (Map<String, Object> resource : resources) {
                 List<GroupMembership> memberships = groupMemberships.stream()
-                        .filter(gm -> gm.userId.equals(resource.get("id")))
+                        .filter(gm -> {
+                            String resourceId = resource.get("id").toString();
+                            if (list.getFirst() instanceof User)
+                                return gm.userId.equals(resourceId);
+                            return gm.groupId.equals(resourceId);
+                        })
                         .toList();
-                List<Map> groupMemberships = memberships.stream().map(GroupMembership::toUserScimResource).collect(Collectors.toList());
-                resource.put("groups", groupMemberships);
+                List<Map> groupMemberships = memberships.stream().map(member -> {
+                    if (list.getFirst() instanceof User)
+                        return member.toUserScimResource();
+                    return member.toScimResource();
+                }).collect(Collectors.toList());
+
+
+                if (list.getFirst() instanceof User) {
+                    resource.put("groups", groupMemberships);
+                } else {
+                    resource.put("members", groupMemberships);
+                }
             }
         }
 

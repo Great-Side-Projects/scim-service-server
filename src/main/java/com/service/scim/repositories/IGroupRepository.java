@@ -4,6 +4,7 @@ import com.service.scim.models.Group;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,7 +14,7 @@ import java.util.List;
  * Interface for the {@link Group} repositories
  */
 @Repository
-public interface IGroupRepository extends JpaRepository<Group, Long> {
+public interface IGroupRepository extends JpaRepository<Group, Long>, JpaSpecificationExecutor<Group> {
     /**
      * Gets a single resource from the repositories, matching the given ID
      * @param id The ID to search for

@@ -1,59 +1,68 @@
 package com.service.scim.services;
 
+import com.service.scim.models.mapper.AbstractEntityMapper;
 import com.service.scim.repositories.IGroupRepository;
 import com.service.scim.repositories.IGroupMembershipRepository;
 import com.service.scim.models.Group;
 import com.service.scim.models.GroupMembership;
+import com.service.scim.repositories.IUserRepository;
+import com.service.scim.utils.MapConverter;
+import com.service.scim.utils.PageRequestBuilder;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional; // Add this import statement to update
+
 import java.lang.reflect.Field;
 import java.util.*;
+
+import static com.service.scim.utils.SCIM.*;
 
 @Service
 public class SingleGroupsService implements ISingleGroupsService {
 
-    IGroupRepository groupDatabase;
-    IGroupMembershipRepository groupMembershipDatabase;
+    private final IGroupRepository groupRepository;
+    private final IGroupMembershipRepository groupMembershipRepository;
+    private final IUserRepository userRepository;
+    private final AbstractEntityMapper<Group> groupEntityMapper;
 
     @Autowired
-    public SingleGroupsService(IGroupRepository groupDatabase, IGroupMembershipRepository groupMembershipDatabase) {
-        this.groupDatabase = groupDatabase;
-        this.groupMembershipDatabase = groupMembershipDatabase;
+    public SingleGroupsService(IGroupRepository groupRepository,
+                               IGroupMembershipRepository groupMembershipRepository,
+                               IUserRepository userRepository, AbstractEntityMapper<Group> groupEntityMapper) {
+
+        this.groupRepository = groupRepository;
+        this.groupMembershipRepository = groupMembershipRepository;
+        this.userRepository = userRepository;
+        this.groupEntityMapper = groupEntityMapper;
     }
 
     /**
      * Queries repositories for {@link Group} with identifier
      * Updates response code with '404' if unable to locate {@link Group}
-     * @param id {@link Group#id}
+     *
+     * @param id       {@link Group#id}
      * @param response HTTP Response
      * @return {@link #scimError(String, Optional)} / JSON {@link Map} of {@link Group}
      */
     @Override
-    public Map singeGroupGet(String id, HttpServletResponse response) {
+    public Map singeGroupGet(String id, HttpServletResponse response, Map<String, String> params) {
         try {
-            Group group = groupDatabase.findById(id).getFirst();
+            Group group = groupRepository.findById(id).getFirst();
             if (group == null) {
                 response.setStatus(404);
                 return scimError("Group not found", Optional.of(404));
             }
+            //TODO: params exludedAttributes=members
 
-            HashMap res = group.toScimResource();
+            group.setGroupMemberships(
+                    groupMembershipRepository
+                            .findByGroupId(id, PageRequestBuilder.build())
+                            .getContent());
 
-            PageRequest pageRequest = PageRequest.of(0, Integer.MAX_VALUE);
-            Page<GroupMembership> gmPage = groupMembershipDatabase.findByGroupId(id, pageRequest);
-            List<GroupMembership> gmList = gmPage.getContent();
-            ArrayList<Map<String, Object>> gmAL = new ArrayList<>();
-
-            for (GroupMembership gm : gmList) {
-                gmAL.add(gm.toScimResource());
-            }
-
-            res.put("members", gmAL);
-            return res;
+            return group.toScimResource();
         } catch (Exception e) {
             response.setStatus(404);
             return scimError("Group not found", Optional.of(404));
@@ -62,43 +71,53 @@ public class SingleGroupsService implements ISingleGroupsService {
 
     /**
      * Update via Put {@link Group} attributes
+     *
      * @param payload Payload from HTTP request
-     * @param id {@link Group#id}
+     * @param id      {@link Group#id}
      * @return JSON {@link Map} of {@link Group}
      */
     @Override
+    @Transactional
     public Map singleGroupPut(Map<String, Object> payload, String id) {
-        Group group = groupDatabase.findById(id).getFirst();
+        Group group = groupRepository.findById(id).getFirst();
         if (group == null) {
             return scimError("Group not found", Optional.of(404));
         }
 
+        // Update group display name if changed in members
+        if (!group.displayName.equals(payload.get("displayName"))) {
+            String newDisplayName = payload.get("displayName").toString();
+            groupMembershipRepository.updateGroupDisplayByGroupId(id, newDisplayName);
+        }
+
+        // Add new members to group if they do not exist in the group already
         if (payload.containsKey("members")) {
             ArrayList<Map<String, Object>> members = (ArrayList<Map<String, Object>>) payload.get("members");
+            List<GroupMembership> newMemberships = members.stream()
+                    .filter(member ->
+                            !groupMembershipRepository.existsByGroupIdAndUserId(group.id, member.get("value").toString())
+                    )
+                    .map(member -> new GroupMembership(member, group.id, group.displayName)).toList();
 
-            for (Map<String, Object> member : members) {
-                GroupMembership membership = new GroupMembership(member);
-                if (!groupMembershipDatabase.existsByUserId(membership.userId))
-                {
-                    membership.id = UUID.randomUUID().toString();
-                    membership.groupId = group.id;
-                    membership.groupDisplay = group.displayName;
-                    groupMembershipDatabase.save(membership);
-                }
+            if (!newMemberships.isEmpty()) {
+                groupMembershipRepository.saveAll(newMemberships);
             }
         }
 
-        group.update(payload);
+        group.update(payload, groupEntityMapper);
+        groupRepository.save(group);
         return group.toScimResource();
     }
 
     /**
      * Update via Patch {@link Group} attributes
+     *
      * @param payload Payload from HTTP request
-     * @param id {@link Group#id}
+     * @param id      {@link Group#id}
      * @return {@link #scimError(String, Optional)} / JSON {@link Map} of {@link Group}
      */
     @Override
+    @Transactional
     public Map singleGroupPatch(Map<String, Object> payload, String id) {
         List schema = (List) payload.get("schemas");
         List<Map> operations = (List) payload.get("Operations");
@@ -116,99 +135,74 @@ public class SingleGroupsService implements ISingleGroupsService {
             return scimError("The 'schemas' type in this request is not supported.", Optional.of(501));
         }
 
-        int found = groupDatabase.findById(id).size();
+        List<Group> grouplist = groupRepository.findById(id);
 
-        if (found == 0) {
+        if (grouplist.isEmpty()) {
             return scimError("Group '" + id + "' was not found.", Optional.of(404));
         }
+        Group group = grouplist.getFirst();
 
-        //Find user for update
-        Group group = groupDatabase.findById(id).get(0);
+        Map<String, Object> groupMapOperations = MapConverter.getMapOperations(payload);
+        group.update(groupMapOperations, groupEntityMapper);
 
-        HashMap res = group.toScimResource();
+        String operation = groupMapOperations.get("operation").toString();
 
-        for (Map map : operations) {
-            if (map.get("op") == null) {
-                continue;
-            }
+        groupMapOperations.forEach((key, value) -> {
 
-            if (map.get("op").equals("replace")) {
-                Map<String, Object> value = (Map) map.get("userId");
+            if (key.equals("members")) {
+                List<Map<String, Object>> members = (List<Map<String, Object>>) value;
+                List<String> userIds = members.stream().map(member ->
+                        member.get("value")
+                                .toString()).toList();
 
-                // Use Java reflection to find and set User attribute
-                if (value != null) {
-                    for (Map.Entry key : value.entrySet()) {
-                        try {
-                            Field field = group.getClass().getDeclaredField(key.getKey().toString());
-                            field.set(group, key.getValue());
-                        } catch (NoSuchFieldException | IllegalAccessException e) {
-                            // Error - Do not update field
+                Map<String, String> userNames = userRepository.findUserNamesByIdsMap(userIds);
+                List<GroupMembership> groupMembershipsToAdd = new ArrayList<>();
+                List<GroupMembership> groupMembershipsToRemove = new ArrayList<>();
+
+                members.forEach(member -> {
+
+                    String userId = member.get("value").toString();
+
+                    if (operation.equals("Add")) {
+                        if (groupMembershipRepository.existsByGroupIdAndUserId(group.id, userId)) {
+                            return;
                         }
-                    }
-
-                    groupDatabase.save(group);
-                }
-            } else if (map.get("op").equals("add")) {
-                if (!map.get("path").equals("members")) {
-                    continue;
-                }
-
-                ArrayList<Map<String, Object>> value = (ArrayList) map.get("userId");
-
-                if (value != null && !value.isEmpty()) {
-                    for (Map val : value) {
-                        PageRequest pageRequest = PageRequest.of(0, Integer.MAX_VALUE);
-                        Page<GroupMembership> gmPage = groupMembershipDatabase.findByGroupIdAndUserId(id, val.get("userId").toString(), pageRequest);
-
-                        if (gmPage.hasContent()) {
-                            continue;
-                        }
-
-                        GroupMembership gm = new GroupMembership(val);
+                        GroupMembership gm = new GroupMembership();
                         gm.id = UUID.randomUUID().toString();
                         gm.groupId = id;
-                        groupMembershipDatabase.save(gm);
+                        gm.userId = userId;
+                        gm.groupDisplay = group.displayName;
+                        gm.userDisplay = userNames.get(userId);
+                        groupMembershipsToAdd.add(gm);
+                    } else if (operation.equals("Remove")) {
+                        if (!groupMembershipRepository.existsByGroupIdAndUserId(group.id, userId)) {
+                            return;
+                        }
+                        Page<GroupMembership> groupMembership = groupMembershipRepository.findByGroupIdAndUserId(id, userId, PageRequestBuilder.build());
+
+                        groupMembershipsToRemove.addAll(groupMembership.getContent());
                     }
-                }
+                });
+                if (!groupMembershipsToAdd.isEmpty())
+                    groupMembershipRepository.saveAll(groupMembershipsToAdd);
+                if (!groupMembershipsToRemove.isEmpty())
+                    groupMembershipRepository.deleteAll(groupMembershipsToRemove);
             }
-        }
+        });
 
-        PageRequest pageRequest = PageRequest.of(0, Integer.MAX_VALUE);
-        Page<GroupMembership> gms = groupMembershipDatabase.findByGroupId(id, pageRequest);
-        List<GroupMembership> gmList = gms.getContent();
-        ArrayList<Map<String, Object>> gmAL = new ArrayList<>();
+        groupRepository.save(group);
+        group.setGroupMemberships(
+                groupMembershipRepository
+                        .findByGroupId(id, PageRequestBuilder.build())
+                        .getContent());
 
-        for (GroupMembership gm: gmList) {
-            gmAL.add(gm.toScimResource());
-        }
-
-        res.put("members", gmAL);
-
-        return res;
-    }
-
-    /**
-     * Output custom error message with response code
-     * @param message Scim error message
-     * @param status_code Response status code
-     * @return JSON {@link Map} of {@link Group}
-     */
-    @Override
-    public Map scimError(String message, Optional<Integer> status_code) {
-        Map<String, Object> returnValue = new HashMap<>();
-        List<String> schemas = new ArrayList<>();
-        schemas.add("urn:ietf:params:scim:api:messages:2.0:Error");
-        returnValue.put("schemas", schemas);
-        returnValue.put("detail", message);
-
-        // Set default to 500
-        returnValue.put("status", status_code.orElse(500));
-        return returnValue;
+        return group.toScimResource();
     }
 
     /**
      * Deletes {@link Group} with identifier
-     * @param id {@link Group#id}
+     *
+     * @param id       {@link Group#id}
      * @param response HTTP Response
      * @return {@link #scimError(String, Optional)} / JSON {@link Map} of {@link Group}
      */
@@ -216,14 +210,15 @@ public class SingleGroupsService implements ISingleGroupsService {
     @Transactional
     public Map singeGroupDelete(String id, HttpServletResponse response) {
         try {
-            Group group = groupDatabase.findById(id).getFirst();
+            Group group = groupRepository.findById(id).getFirst();
             if (group == null) {
                 response.setStatus(404);
                 return scimError("Group not found", Optional.of(404));
             }
-            Page<GroupMembership> toDelete = groupMembershipDatabase.findByGroupId(id, PageRequest.of(0, Integer.MAX_VALUE));
-            groupMembershipDatabase.deleteAll(toDelete);
-            groupDatabase.delete(group);
+            Page<GroupMembership> toDelete = groupMembershipRepository.findByGroupId(id, PageRequest.of(0, Integer.MAX_VALUE));
+            groupMembershipRepository.deleteAll(toDelete);
+            groupRepository.delete(group);
+            response.setStatus(204);
             return group.toScimResource();
         } catch (Exception e) {
             response.setStatus(404);

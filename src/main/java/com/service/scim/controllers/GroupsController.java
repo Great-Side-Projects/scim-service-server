@@ -42,8 +42,8 @@ public class GroupsController {
      */
     @RequestMapping(method = RequestMethod.POST)
     public @ResponseBody Map groupsPost(
-            @RequestBody Map<String, Object> params,
+            @RequestBody Map<String, Object> body,
             HttpServletResponse response){
-        return groupsService.groupsPost(params, response);
+        return groupsService.groupsPost(body, response);
     }
 }

@@ -1,9 +1,8 @@
 package com.service.scim.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.service.scim.models.mapper.AbstractEntityMapper;
+import com.service.scim.models.mapper.GroupEntityMapper;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,19 +30,28 @@ public class Group extends BaseModel {
     @Column(nullable = false, length = 250)
     public String displayName;
 
+    @Transient
+    private List<GroupMembership> groupMemberships;
+
+    public void setGroupMemberships(List<GroupMembership> groupMemberships) {
+        this.groupMemberships = groupMemberships;
+    }
+
     public Group() {}
 
-    public Group(Map<String, Object> resource){
-        this.update(resource);
+    public Group(Map<String, Object> resource, AbstractEntityMapper groupEntityMapper) {
+        this.update(resource,groupEntityMapper);
     }
 
     /**
      * Updates {@link Group} object from JSON {@link Map}
      * @param resource JSON {@link Map} of {@link Group}
      */
-    public void update(Map<String, Object> resource) {
+    public void update(Map<String, Object> resource, AbstractEntityMapper groupEntityMapper) {
         try{
-            this.displayName = resource.get("displayName").toString();
+            if (resource.containsKey("displayName"))
+                this.displayName = resource.get("displayName").toString();
+            groupEntityMapper.update(this, resource);
         } catch(Exception e) {
             System.out.println(e);
         }
@@ -54,7 +62,7 @@ public class Group extends BaseModel {
      * @return JSON {@link Map} of {@link Group}
      */
     @Override
-    public HashMap<String, Object> toScimResource(){
+    public HashMap<String, Object> toScimResource() {
         HashMap<String, Object> returnValue = new HashMap<>();
         List<String> schemas = new ArrayList<>();
         schemas.add("urn:ietf:params:scim:schemas:core:2.0:Group");
@@ -67,6 +75,14 @@ public class Group extends BaseModel {
         meta.put("resourceType", "Group");
         meta.put("location", ("/scim/v2/Groups/" + this.id));
         returnValue.put("meta", meta);
+
+        if (this.groupMemberships != null) {
+            List<Map> gmAL = this.groupMemberships
+                    .stream()
+                    .map(GroupMembership::toScimResource)
+                    .toList();
+            returnValue.put("members", gmAL);
+        }
 
         return returnValue;
     }

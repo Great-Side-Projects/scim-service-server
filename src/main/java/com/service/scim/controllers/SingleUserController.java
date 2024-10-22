@@ -71,4 +71,21 @@ public class SingleUserController {
         //System.out.println(headers);
         return singleUserService.singleUserPatch(payload, id);
     }
+
+    /**
+     * Delete {@link User} with identifier
+     * @param id {@link User#id}
+     * @param response HTTP Response
+     * @return  / JSON {@link Map} of {@link User}
+     */
+    @RequestMapping(method = RequestMethod.DELETE)
+    public @ResponseBody
+    Map singeUserDelete(
+            @PathVariable String id,
+            HttpServletResponse response,
+            @RequestHeader(required = false) Map<String, String> headers) {
+        System.out.println("Delete User");
+        response.setStatus(204);
+        return null;
+    }
 }

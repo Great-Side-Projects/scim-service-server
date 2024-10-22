@@ -1,6 +1,6 @@
 package com.service.scim.dispatchers;
 
-import com.service.scim.repositories.ITransactionDatabase;
+import com.service.scim.repositories.ITransactionRepository;
 import com.service.scim.models.Transaction;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,7 +21,7 @@ import java.net.URLDecoder;
  */
 public class LoggingDispatcherServlet extends DispatcherServlet {
     @Autowired
-    ITransactionDatabase transactionDatabase;
+    ITransactionRepository transactionDatabase;
 
     private Logger logger = LoggerFactory.getLogger(LoggingDispatcherServlet.class);
 
@@ -48,7 +48,7 @@ public class LoggingDispatcherServlet extends DispatcherServlet {
     }
 
     /**
-     * Creates a {@link Transaction} for a transaction and saves it to the {@link ITransactionDatabase}
+     * Creates a {@link Transaction} for a transaction and saves it to the {@link ITransactionRepository}
      * @param requestToCache The transaction {@link HttpServletRequest}
      * @param responseToCache The transaction {@link HttpServletResponse}
      * @param handler The transaction {@link HandlerExecutionChain}

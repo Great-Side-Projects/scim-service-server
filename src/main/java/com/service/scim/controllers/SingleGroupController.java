@@ -33,9 +33,10 @@ public class SingleGroupController {
     public @ResponseBody
     Map singeGroupGet(
             @PathVariable String id,
+            @RequestParam Map<String, String> params,
             HttpServletResponse response) {
 
-        return singleGroupsService.singeGroupGet(id, response);
+        return singleGroupsService.singeGroupGet(id, response, params);
     }
 
     /**

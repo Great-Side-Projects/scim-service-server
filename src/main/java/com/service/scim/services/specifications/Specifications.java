@@ -1,6 +1,5 @@
 package com.service.scim.services.specifications;
 
-import com.service.scim.models.User;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import java.util.ArrayList;
@@ -9,9 +8,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class UserSpecifications {
+public class Specifications {
 
-    public static Specification<User> createUserSpecification(Map<String, String> params) {
+    public static <T> Specification<T> createSpecification(Map<String, String> params) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 

@@ -1,6 +1,6 @@
 package com.service.scim.models;
 
-import com.service.scim.models.mapper.UserMapper;
+import com.service.scim.models.mapper.UserEntityMapper;
 import com.service.scim.triggers.UserTrailListener;
 import jakarta.persistence.*;
 import java.util.*;
@@ -19,6 +19,10 @@ public class User extends BaseModel {
     @Column(length = 36)
     @Id
     public String id;
+
+    public String getId() {
+        return this.id;
+    }
 
     public void setActive(Boolean value) {
         if (value == null) {
@@ -44,6 +48,10 @@ public class User extends BaseModel {
      */
     @Column(unique = true, nullable = false, length = 250)
     public String userName;
+
+    public String getUserName() {
+        return this.userName;
+    }
 
     /**
      * The email of the user
@@ -225,8 +233,8 @@ public class User extends BaseModel {
     public User() {
     }
 
-    public User(Map<String, Object> resource, UserMapper userMapper) {
-        this.update(resource, userMapper);
+    public User(Map<String, Object> resource, UserEntityMapper userEntityMapper) {
+        this.update(resource, userEntityMapper);
     }
 
     /**
@@ -234,7 +242,7 @@ public class User extends BaseModel {
      *
      * @param resource JSON {@link Map} of {@link User}
      */
-    public void update(Map<String, Object> resource, UserMapper userMapper) {
+    public void update(Map<String, Object> resource, UserEntityMapper userEntityMapper) {
         try {
 
             if (resource.containsKey("active")) {
@@ -242,7 +250,7 @@ public class User extends BaseModel {
                 resource.remove("active");
             }
 
-            userMapper.update(this, resource);
+            userEntityMapper.update(this, resource);
         } catch (Exception e) {
             //TODO: check exception
             System.out.println(e);

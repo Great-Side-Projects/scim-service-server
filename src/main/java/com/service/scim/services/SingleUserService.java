@@ -1,6 +1,6 @@
 package com.service.scim.services;
 
-import com.service.scim.models.mapper.UserMapper;
+import com.service.scim.models.mapper.UserEntityMapper;
 import com.service.scim.repositories.IUserRepository;
 import com.service.scim.models.User;
 import com.service.scim.utils.MapConverter;
@@ -13,11 +13,11 @@ import static com.service.scim.utils.SCIM.*;
 public class SingleUserService implements ISingleUserService {
 
     private final IUserRepository userDatabase;
-    private final UserMapper userMapper;
+    private final UserEntityMapper userEntityMapper;
 
-    public SingleUserService(IUserRepository userDatabase, UserMapper userMapper) {
+    public SingleUserService(IUserRepository userDatabase, UserEntityMapper userEntityMapper) {
         this.userDatabase = userDatabase;
-        this.userMapper = userMapper;
+        this.userEntityMapper = userEntityMapper;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class SingleUserService implements ISingleUserService {
     @Override
     public Map singleUserPut(Map<String, Object> payload, String id) {
         User user = userDatabase.findById(id).getFirst();
-        user.update(payload, userMapper);
+        user.update(payload, userEntityMapper);
         userDatabase.save(user);
         return user.toScimResource();
     }
@@ -55,8 +55,6 @@ public class SingleUserService implements ISingleUserService {
             return scimError(OPERATIONS_ERROR_MSG, Optional.of(400));
         }
 
-        Map<String, Object> userMapOperations = MapConverter.getMapOperations(payload);
-
         String schemaPatchOp = "urn:ietf:params:scim:api:messages:2.0:PatchOp";
         if (!schema.contains(schemaPatchOp)) {
             return scimError(SCHEMA_NOT_SUPPORTED_MSG, Optional.of(501));
@@ -69,7 +67,8 @@ public class SingleUserService implements ISingleUserService {
             return scimError(String.format(USER_NOT_FOUND, id), Optional.of(404));
         }
 
-        user.update(userMapOperations, userMapper);
+        Map<String, Object> userMapOperations = MapConverter.getMapOperations(payload);
+        user.update(userMapOperations, userEntityMapper);
         userDatabase.save(user);
 
         return user.toScimResource();

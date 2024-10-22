@@ -1,7 +1,5 @@
 package com.service.scim.models.mapper;
 
-import com.service.scim.models.User;
-
-public interface IMapStrategy {
-    void applyUpdate(User user, String field, Object value);
+public interface IMapStrategy<T> {
+    void applyUpdate(T entity, String field, Object value);
 }

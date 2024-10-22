@@ -1,23 +1,24 @@
 package com.service.scim.models.mapper;
 
-import com.service.scim.models.User;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GenericIMapStrategy implements IMapStrategy {
+public class GenericMapStrategy<T> implements IMapStrategy<T>{
 
     private static final Map<String, String> mappedProperty = new HashMap<>();
     private static final ArrayList<String> declaredFields = new ArrayList<>();
+    private final Class<T> entity;
 
-    public GenericIMapStrategy() {
+    public GenericMapStrategy(Class<T> entity) {
+        this.entity = entity;
         InitMappedProperty();
         InitDeclaredFields();
     }
 
     private void InitDeclaredFields() {
-        Field[] fields = User.class.getDeclaredFields();
+        Field[] fields = entity.getDeclaredFields();
         for (Field field : fields) {
             declaredFields.add(field.getName());
         }
@@ -51,7 +52,7 @@ public class GenericIMapStrategy implements IMapStrategy {
     }
 
     @Override
-    public void applyUpdate(User user, String field, Object value) {
+    public void applyUpdate(T entity, String field, Object value) {
 
         field = this.IsMappedProperty(field) ? this.getMappedProperty(field) : field;
         // Use Java reflection to find and set User attribute
@@ -60,8 +61,8 @@ public class GenericIMapStrategy implements IMapStrategy {
             if (!declaredFields.contains(field)) {
                 return;
             }
-            Field classfield = user.getClass().getDeclaredField(field);
-            classfield.set(user, value);
+            Field classfield = entity.getClass().getDeclaredField(field);
+            classfield.set(entity, value);
         } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
             System.out.println(e);
             // Error - Do not update field
