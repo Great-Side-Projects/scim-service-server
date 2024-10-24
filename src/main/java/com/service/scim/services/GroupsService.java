@@ -5,7 +5,7 @@ import com.service.scim.repositories.IGroupRepository;
 import com.service.scim.repositories.IGroupMembershipRepository;
 import com.service.scim.models.Group;
 import com.service.scim.models.GroupMembership;
-import com.service.scim.services.specifications.Specifications;
+import com.service.scim.services.specifications.FilterSpecifications;
 import com.service.scim.utils.ListResponse;
 import com.service.scim.utils.PageRequestBuilder;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,7 +39,7 @@ public class GroupsService implements IGroupsService {
     @Override
     public Map groupsGet(Map<String, String> params) {
         PageRequest pageRequest = PageRequestBuilder.build(params);
-        Page<Group> groups = groupRepository.findAll(Specifications.createSpecification(params), pageRequest);
+        Page<Group> groups = groupRepository.findAll(FilterSpecifications.createSpecification(params), pageRequest);
 
         List<String> groupsIds = groups.getContent().stream().map(group -> group.id).toList();
         //TODO: excludedAttributes=members

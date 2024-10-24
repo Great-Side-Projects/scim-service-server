@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Specifications {
+public class FilterSpecifications {
 
     public static <T> Specification<T> createSpecification(Map<String, String> params) {
         return (root, query, criteriaBuilder) -> {
