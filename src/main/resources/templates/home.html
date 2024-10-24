@@ -238,6 +238,7 @@
         button {
             white-space: nowrap;
         }
+
         /* Status colors for transactions */
         .status-200 {
             color: #059669;
@@ -255,7 +256,13 @@
             color: #dc2626;
         }
 
-    </style>
+        .json-content {
+            background: #f1f5f9;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin: 0;
+        }
+  </style>
 
 </head>
 <body>
@@ -482,7 +489,9 @@
                                             Method
                                         </span>
                                     </td>
-                                    <td class="table-td-endpoint-transactions" th:text="${transaction.endpoint}">Endpoint</td>
+                                    <td class="table-td-endpoint-transactions" th:text="${transaction.endpoint}">
+                                        Endpoint
+                                    </td>
                                     <td>
                                         <button th:classappend="${transaction.javaMethod == null} ? disabled"
                                                 type="button" class="btn btn-info modal-button"
@@ -573,20 +582,20 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <ul class="nav nav-tabs mb-3">
-                        <li class="nav-item">
-                            <a class="nav-link active" data-bs-toggle="tab" href="#request">Request</a>
-                            <pre class=".body-container"><code th:text="${transaction.requestBody}"></code></pre>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-bs-toggle="tab" href="#response">Response</a>
-                            <pre class=".body-container"><code th:text="${transaction.responseBody}"></code></pre>
-                        </li>
-                    </ul>
+                    <div>
+                        <div>
+                            <h6 class="fw-bold mb-3">Request</h6>
+                            <pre><code th:text="${transaction.requestBody}"></code></pre>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-3">Response</h6>
+                            <pre><code th:text="${transaction.responseBody}"></code></pre>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -601,7 +610,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                    <pre class=".body-container">
+                <pre class=".body-container">
 <code th:text="${'> ID: ' + transaction.id}"></code>
 <code th:text="${'> Request ID: ' + transaction.requestId}"></code>
 <code th:text="${'> Timestamp: ' + transaction.timeStamp}"></code>
@@ -609,11 +618,19 @@
 <code th:text="${'> Endpoint: ' + transaction.endpoint}"></code>
 <code th:text="${'> Response Code: ' + transaction.httpCode}"></code>
 <code th:text="${'> Handler: ' + transaction.javaMethod}"></code>
+                </pre>
+
 <code th:text="${'> Request Body:'}"></code>
-<code th:text="${transaction.requestBody}"></code>
+
+                <pre class="json-content">
+<code class="json-content" th:text="${transaction.requestBody}"></code>
+                </pre>
+
 <code th:text="${'> Response Body:'}"></code>
-<code th:text="${transaction.responseBody}"></code>
-                    </pre>
+
+                <pre class="json-content">
+<pre class="json-content" th:text="${transaction.responseBody}"></pre>
+                </pre>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -640,6 +657,28 @@
 
             }
             $(el).text(content);
+        });
+    });
+
+    // Formateo de JSON en modales
+    function formatJSON(element) {
+        try {
+            const content = $(element).text();
+            if(content.trim() === '[unknown]') {
+                return;
+            }
+            const parsed = JSON.parse(content);
+            const formatted = JSON.stringify(parsed, null, 2);
+            $(element).text(formatted);
+        } catch (e) {
+            console.warn('No valid JSON found');
+        }
+    }
+
+    // Formatear JSON al abrir modales
+    $('.modal').on('shown.bs.modal', function () {
+        $(this).find('pre.json-content').each(function () {
+            formatJSON(this);
         });
     });
 </script>
