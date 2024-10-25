@@ -24,7 +24,7 @@ env:
   AZURE_CONTAINER_REGISTRY: scimserviceserver
   WEBAPP_NAME: scim-service-server
   WORKING_DIRECTORY: ./
-  DOCKERFILE: Dockerfile
+  #DOCKERFILE: Dockerfile
 
 jobs:
   build-and-analyze:
@@ -100,3 +100,4 @@ jobs:
           app-name: ${{ env.WEBAPP_NAME }}
           slot-name: 'production'
           images: ${{ env.IMAGENAME }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
