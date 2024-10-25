@@ -8,25 +8,22 @@ import com.service.scim.models.User;
 import com.service.scim.services.specifications.FilterSpecifications;
 import com.service.scim.utils.ListResponse;
 import com.service.scim.utils.PageRequestBuilder;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
-import static com.service.scim.utils.SCIM.*;
 
 @Service
 public class UsersService implements IUsersService {
     private final IUserRepository userRepository;
     private final IGroupMembershipRepository groupMembershipRepository;
-    private final UserEntityMapper userEntityMapper;
+
 
     public UsersService(IUserRepository userRepository,
-                        IGroupMembershipRepository groupMembershipRepository,
-                        UserEntityMapper userEntityMapper) {
+                        IGroupMembershipRepository groupMembershipRepository) {
         this.userRepository = userRepository;
         this.groupMembershipRepository = groupMembershipRepository;
-        this.userEntityMapper = userEntityMapper;
     }
 
     @Override
@@ -49,22 +46,9 @@ public class UsersService implements IUsersService {
     }
 
     @Override
-    public Map usersPost(Map<String, Object> body, HttpServletResponse response) {
-        User newUser = new User(body, userEntityMapper);
+    public Map usersPost(User newUser) {
         newUser.id = UUID.randomUUID().toString();
-
-        if (newUser.email == null || newUser.email.isEmpty()) {
-            response.setStatus(400);
-            return scimError(OPERATIONS_ERROR_MSG + " : email", Optional.of(400));
-        }
-
-        if (newUser.userName == null || newUser.userName.isEmpty()) {
-            response.setStatus(400);
-            return scimError(OPERATIONS_ERROR_MSG + " : userName", Optional.of(400));
-        }
-
         userRepository.save(newUser);
-        response.setStatus(201);
         return newUser.toScimResource();
     }
 }

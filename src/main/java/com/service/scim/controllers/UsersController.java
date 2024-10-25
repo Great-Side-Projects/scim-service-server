@@ -1,54 +1,73 @@
 package com.service.scim.controllers;
 
 import com.service.scim.models.User;
+import com.service.scim.models.mapper.UserEntityMapper;
 import com.service.scim.services.IUsersService;
-import com.service.scim.utils.ListResponse;
-import jakarta.servlet.http.HttpServletResponse;
+import com.service.scim.utils.SCIM;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import static com.service.scim.utils.SCIM.OPERATIONS_ERROR_MSG;
+import static com.service.scim.utils.SCIM.scimError;
 
-/**
- *  URL route (root)/scim/v2/Users
- */
-@Controller
+@RestController
 @RequestMapping("/scim/v2/Users")
 public class UsersController {
 
     private final IUsersService usersService;
+    private final UserEntityMapper userEntityMapper;
 
     @Autowired
-    public UsersController(IUsersService usersService) {
-      this.usersService = usersService;
+    public UsersController(IUsersService usersService, UserEntityMapper userEntityMapper) {
+        this.usersService = usersService;
+        this.userEntityMapper = userEntityMapper;
     }
 
     /**
-     * Support pagination and filtering by username
-     * @param params Payload from HTTP request
-     * @return JSON {@link Map} {@link ListResponse}
+     * Supports pagination and filtering by username.
+     *
+     * @param params Query parameters for pagination and filtering
+     * @return ResponseEntity with the list of users and pagination info
      */
-    @RequestMapping(method = RequestMethod.GET)
-    public @ResponseBody Map usersGet(
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> getUsers(
             @RequestParam Map<String, String> params,
-            HttpServletResponse response,
-            @RequestHeader(required = false) Map<String, String> headers
-             ) {
+            @RequestHeader(required = false) HttpHeaders headers) {
 
-        return usersService.usersGet(params);
+        return ResponseEntity.ok(usersService.usersGet(params));
     }
 
     /**
-     * Creates new {@link User} with given attributes
-     * @param body JSON {@link Map} of {@link User} attributes
-     * @param response HTTP response
-     * @return JSON {@link Map} of {@link User}
+     * Creates a new {@link User} with the given attributes.
+     *
+     * @param body JSON Map containing User attributes
+     * @return ResponseEntity with the created User and HTTP status
      */
-    @RequestMapping(method = RequestMethod.POST)
-    public @ResponseBody Map usersPost(
-            @RequestBody Map<String, Object> body,
-            HttpServletResponse response){
+    @PostMapping
+    public ResponseEntity<Map<String, Object>> createUser(
+            @RequestBody Map<String, Object> body) {
 
-        return usersService.usersPost(body, response);
+        User newUser = new User(body, userEntityMapper);
+
+        if (!SCIM.isValidEmail(newUser.email)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(scimError(OPERATIONS_ERROR_MSG + " : email",
+                            Optional.of(HttpStatus.BAD_REQUEST.value())
+                    ));
+
+        }
+
+        if (!SCIM.isValidUserName(newUser.userName)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(scimError(OPERATIONS_ERROR_MSG + " : userName",
+                            Optional.of(HttpStatus.BAD_REQUEST.value())
+                    ));
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(usersService.usersPost(newUser));
     }
 }

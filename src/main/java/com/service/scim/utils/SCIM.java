@@ -2,7 +2,6 @@ package com.service.scim.utils;
 
 import com.service.scim.models.User;
 import java.util.*;
-
 public class SCIM {
 
     public static final String USER_NOT_FOUND_MSG = "User not found";
@@ -13,7 +12,8 @@ public class SCIM {
 
     /**
      * Output custom error message with response code
-     * @param message Scim error message
+     *
+     * @param message     Scim error message
      * @param status_code Response status code
      * @return JSON {@link Map} of {@link User}
      */
@@ -27,5 +27,13 @@ public class SCIM {
         // Set default to 500
         returnValue.put("status", status_code.orElse(500));
         return returnValue;
+    }
+
+    public static boolean isValidEmail(String email) {
+        return email != null && email.matches("^(?!\\.)[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(?<!\\.)@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$");
+    }
+
+    public static boolean isValidUserName (String userName) {
+        return userName != null && !userName.isEmpty();
     }
 }
