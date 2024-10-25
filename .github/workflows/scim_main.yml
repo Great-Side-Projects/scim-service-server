@@ -1,0 +1,102 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/README.md'
+# Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      job_to_run:
+        description: 'Job to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - build-and-analyze
+          - build-and-deploy
+
+env:
+  AZURE_CONTAINER_REGISTRY: scimserviceserver
+  WEBAPP_NAME: scim-service-server
+  WORKING_DIRECTORY: '' 
+  DOCKERFILE: Dockerfile
+
+jobs:
+  build-and-analyze:
+    name: Build and analyze
+    runs-on: ubuntu-latest
+    if: github.event.inputs.job_to_run == 'build-and-analyze' || github.event.inputs.job_to_run == 'all' || github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Set up JDK 22
+        uses: actions/setup-java@v1
+        with:
+          java-version: 22
+      - name: Cache SonarQube packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Cache Maven packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Build and analyze
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_SCIM }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: mvn -B -f ${{env.WORKING_DIRECTORY}}/pom.xml verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=scim-service-server -Dsonar.projectName='scim-service-server'
+
+  build-and-deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    if: github.event.inputs.job_to_run == 'build-and-deploy' || github.event.inputs.job_to_run == 'all' || github.event_name == 'push'
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login registry
+        uses: docker/login-action@v2.2.0
+        with:
+            registry: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io
+            username: ${{ secrets.SCIM_REGISTRY_USERNAME }}
+            password: ${{ secrets.SCIM_REGISTRY_PASSWORD }}
+
+      - name: Build and push container image to registry
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ env.WORKING_DIRECTORY }}
+          file: ./${{ env.WORKING_DIRECTORY }}/${{ env.DOCKERFILE }}
+          push: true
+          tags: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.WEBAPP_NAME }}:${{ github.sha }}
+          build-args: |
+            "DATASOURCE_URL=jdbc:mysql://${{ secrets.DATASOURCE_URL }}"
+            "DATASOURCE_USERNAME=${{ secrets.DATASOURCE_USERNAME }}"
+            "DATASOURCE_PASSWORD=${{ secrets.DATASOURCE_PASSWORD }}"
+             
+#      - name: Log in to Azure
+#        uses: azure/login@v1
+#        with:
+#          creds: ${{ secrets.SIDEPROJECTS_CREDENTIALS }}
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        env:
+          IMAGENAME: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.WEBAPP_NAME }}:${{ github.sha }}
+        with:
+          app-name: ${{ env.WEBAPP_NAME }}
+          slot-name: 'production'
+          images: ${{ env.IMAGENAME }}
