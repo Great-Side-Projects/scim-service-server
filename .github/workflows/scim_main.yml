@@ -4,7 +4,7 @@
 on:
   push:
     branches:
-      - main
+      - master
     paths-ignore:
       - '**/README.md'
 # Allow manual trigger
