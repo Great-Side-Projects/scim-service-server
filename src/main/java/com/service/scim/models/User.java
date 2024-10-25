@@ -236,6 +236,9 @@ public class User extends BaseModel {
     @Temporal(TemporalType.TIMESTAMP)
     public LocalDateTime createdAt = LocalDateTime.now(ZoneOffset.UTC);
 
+    @Temporal(TemporalType.TIMESTAMP)
+    public LocalDateTime updatedAt;
+
     public User() {
     }
 

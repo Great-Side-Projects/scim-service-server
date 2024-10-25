@@ -5,6 +5,8 @@ import com.service.scim.repositories.IUserRepository;
 import com.service.scim.models.User;
 import com.service.scim.utils.MapConverter;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 @Service
@@ -35,6 +37,7 @@ public class SingleUserService implements ISingleUserService {
         }
 
         user.get().update(payload, userEntityMapper);
+        user.get().updatedAt = LocalDateTime.now(ZoneOffset.UTC);
         userRepository.save(user.get());
         return user.get().toScimResource();
     }
@@ -51,6 +54,7 @@ public class SingleUserService implements ISingleUserService {
 
         Map<String, Object> userMapOperations = MapConverter.getMapOperations(payload);
         user.get().update(userMapOperations, userEntityMapper);
+        user.get().updatedAt = LocalDateTime.now(ZoneOffset.UTC);
         userRepository.save(user.get());
 
         return user.get().toScimResource();

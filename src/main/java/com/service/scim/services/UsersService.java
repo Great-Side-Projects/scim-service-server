@@ -1,6 +1,5 @@
 package com.service.scim.services;
 
-import com.service.scim.models.mapper.UserEntityMapper;
 import com.service.scim.repositories.IGroupMembershipRepository;
 import com.service.scim.repositories.IUserRepository;
 import com.service.scim.models.GroupMembership;
