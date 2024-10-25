@@ -23,7 +23,7 @@ on:
 env:
   AZURE_CONTAINER_REGISTRY: scimserviceserver
   WEBAPP_NAME: scim-service-server
-  WORKING_DIRECTORY: '' 
+  WORKING_DIRECTORY: ./
   DOCKERFILE: Dockerfile
 
 jobs:
@@ -77,8 +77,8 @@ jobs:
       - name: Build and push container image to registry
         uses: docker/build-push-action@v5
         with:
-          context: ./${{ env.WORKING_DIRECTORY }}
-          file: ./${{ env.WORKING_DIRECTORY }}/${{ env.DOCKERFILE }}
+          context: ${{ env.WORKING_DIRECTORY }}
+          file: ${{ env.WORKING_DIRECTORY }}${{ env.DOCKERFILE }}
           push: true
           tags: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.WEBAPP_NAME }}:${{ github.sha }}
           build-args: |
