@@ -2,21 +2,19 @@ package com.service.scim.controllers;
 
 import com.service.scim.models.Group;
 import com.service.scim.services.IGroupsService;
-import com.service.scim.utils.ListResponse;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.*;
+import java.util.Map;
 
-/**
- *  URL route (root)/scim/v2/Groups
- */
-@Controller
+@RestController
 @RequestMapping("/scim/v2/Groups")
 public class GroupsController {
 
-    IGroupsService groupsService;
+
+    private final IGroupsService groupsService;
 
     @Autowired
     public GroupsController(IGroupsService groupsService) {
@@ -26,24 +24,26 @@ public class GroupsController {
     /**
      * Support pagination and filtering by displayName
      * @param params Payload from HTTP request
-     * @return JSON {@link Map} {@link ListResponse}
+     * @return ResponseEntity with ListResponse of Groups
      */
-    @RequestMapping(method = RequestMethod.GET)
-    public @ResponseBody Map groupsGet(
+    @GetMapping
+    public ResponseEntity<Map<String,Object>> getGroups(
             @RequestParam Map<String, String> params) {
-        return groupsService.groupsGet(params);
+
+        return ResponseEntity.ok(groupsService.groupsGet(params));
     }
 
     /**
      * Creates new {@link Group} with given attributes
-     * @param body JSON {@link Map} of {@link Group} attributes
-     * @param response HTTP response
-     * @return JSON {@link Map} of {@link Group}
+     * @param body JSON Map of Group attributes
+     * @return ResponseEntity with created Group
      */
-    @RequestMapping(method = RequestMethod.POST)
-    public @ResponseBody Map groupsPost(
+    @PostMapping
+    public ResponseEntity<Map<String,Object>> createGroup(
             @RequestBody Map<String, Object> body,
-            HttpServletResponse response){
-        return groupsService.groupsPost(body, response);
+            @RequestHeader(required = false) HttpHeaders headers) {
+
+        Map<String, Object> newGroup = groupsService.groupsPost(body);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newGroup);
     }
 }

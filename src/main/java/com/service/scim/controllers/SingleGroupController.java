@@ -2,20 +2,20 @@ package com.service.scim.controllers;
 
 import com.service.scim.models.Group;
 import com.service.scim.services.ISingleGroupsService;
-import jakarta.servlet.http.HttpServletResponse;
+import com.service.scim.utils.PatchRequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import static com.service.scim.utils.SCIM.scimError;
 
-/**
- *  URL route (root)/scim/v2/Groups/{id}
- */
-@Controller
+@RestController
 @RequestMapping("/scim/v2/Groups/{id}")
 public class SingleGroupController {
 
-    ISingleGroupsService singleGroupsService;
+    private final ISingleGroupsService singleGroupsService;
 
     @Autowired
     public SingleGroupController(ISingleGroupsService singleGroupsService) {
@@ -23,59 +23,91 @@ public class SingleGroupController {
     }
 
     /**
-     * Queries repositories for {@link Group} with identifier
-     * Updates response code with '404' if unable to locate {@link Group}
-     * @param id {@link Group#id}
-     * @param response HTTP Response
-     * @return  / JSON {@link Map} of {@link Group}
+     * Queries repositories for {@link Group} with identifier.
+     * Updates response with '404' if unable to locate {@link Group}.
+     *
+     * @param id Group identifier
+     * @param params Query parameters from the request
+     * @return ResponseEntity with the Group data or 404 if not found
      */
-    @RequestMapping(method = RequestMethod.GET)
-    public @ResponseBody
-    Map singeGroupGet(
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> getGroup(
             @PathVariable String id,
-            @RequestParam Map<String, String> params,
-            HttpServletResponse response) {
+            @RequestParam Map<String, String> params) {
 
-        return singleGroupsService.singeGroupGet(id, response, params);
+        Map<String, Object> group = singleGroupsService.singeGroupGet(id, params);
+        if (group.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(scimError("Group not found",
+                            Optional.of(HttpStatus.NOT_FOUND.value())));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(group);
     }
 
     /**
-     * Update via Put {@link Group} attributes
-     * @param payload Payload from HTTP request
-     * @param id {@link Group#id}
-     * @return JSON {@link Map} of {@link Group}
+     * Update via Put {@link Group} attributes.
+     *
+     * @param payload JSON Map of Group attributes
+     * @param id Group identifier
+     * @return ResponseEntity with the updated Group
      */
-    @RequestMapping(method = RequestMethod.PUT)
-    public @ResponseBody Map singleGroupPut(
+    @PutMapping
+    public ResponseEntity<Map<String, Object>> updateGroup(
             @RequestBody Map<String, Object> payload,
             @PathVariable String id) {
-        return singleGroupsService.singleGroupPut(payload, id);
+
+        Map<String, Object> updatedGroup = singleGroupsService.singleGroupPut(payload, id);
+        if(updatedGroup.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(scimError("Group not found",
+                            Optional.of(HttpStatus.NOT_FOUND.value())));
+
+        return ResponseEntity.ok(updatedGroup);
     }
 
     /**
-     * Update via Patch {@link Group} attributes
-     * @param payload Payload from HTTP request
-     * @param id {@link Group#id}
-     * @return  / JSON {@link Map} of {@link Group}
+     * Update via Patch {@link Group} attributes.
+     *
+     * @param payload JSON Map of Group attributes
+     * @param id Group identifier
+     * @return ResponseEntity with the partially updated Group
      */
-    @RequestMapping(method = RequestMethod.PATCH)
-    public @ResponseBody Map singleGroupPatch(
+    @PatchMapping
+    public ResponseEntity<Map<String, Object>> patchGroup(
             @RequestBody Map<String, Object> payload,
             @PathVariable String id) {
-        return singleGroupsService.singleGroupPatch(payload, id);
+
+        Map<String, Object> mapValidate = PatchRequestValidator.validate(payload);
+        if (mapValidate != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mapValidate);
+        }
+        Map<String, Object> updatedGroup = singleGroupsService.singleGroupPatch(payload, id);
+
+        if(updatedGroup.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(scimError("Group not found",
+                            Optional.of(HttpStatus.NOT_FOUND.value())));
+
+        return ResponseEntity.ok(updatedGroup);
     }
 
     /**
-     * Delete {@link Group} with identifier
-     * @param id {@link Group#id}
-     * @param response HTTP Response
-     * @return  / JSON {@link Map} of {@link Group}
+     * Delete {@link Group} with identifier.
+     *
+     * @param id Group identifier
+     * @return ResponseEntity with no content (204) on success
      */
-    @RequestMapping(method = RequestMethod.DELETE)
-    public @ResponseBody
-    Map singeGroupDelete(
-            @PathVariable String id,
-            HttpServletResponse response) {
-        return singleGroupsService.singeGroupDelete(id, response);
+    @DeleteMapping
+    public ResponseEntity<Void> deleteGroup(
+            @PathVariable String id) {
+
+        Map<String, Object> groupDeleted = singleGroupsService.singeGroupDelete(id);
+
+        if (groupDeleted.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return ResponseEntity.noContent().build();
     }
 }

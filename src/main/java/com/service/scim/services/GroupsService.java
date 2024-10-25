@@ -8,7 +8,6 @@ import com.service.scim.models.GroupMembership;
 import com.service.scim.services.specifications.FilterSpecifications;
 import com.service.scim.utils.ListResponse;
 import com.service.scim.utils.PageRequestBuilder;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,15 +39,13 @@ public class GroupsService implements IGroupsService {
     public Map groupsGet(Map<String, String> params) {
         PageRequest pageRequest = PageRequestBuilder.build(params);
         Page<Group> groups = groupRepository.findAll(FilterSpecifications.createSpecification(params), pageRequest);
-
-        List<String> groupsIds = groups.getContent().stream().map(group -> group.id).toList();
-        //TODO: excludedAttributes=members
-        //if (params.containsKey("excludedAttributes") && params.get("excludedAttributes").equals("members")) {
-
-        Page<GroupMembership> groupMemberships = groupMembershipRepository.findByGroupIds(groupsIds, PageRequestBuilder.build());
-
         List<Group> foundGroups = groups.getContent();
 
+        Page<GroupMembership> groupMemberships = Page.empty();
+        if (!(params.containsKey("excludedAttributes") && params.get("excludedAttributes").equals("members"))) {
+            List<String> groupsIds = groups.getContent().stream().map(group -> group.id).toList();
+            groupMemberships = groupMembershipRepository.findByGroupIds(groupsIds, PageRequestBuilder.build());
+        }
         // Convert optional values into Optionals for ListResponse Constructor
         ListResponse<Group> returnValue = new ListResponse<>(
                 foundGroups,
@@ -64,12 +61,11 @@ public class GroupsService implements IGroupsService {
      * Creates new {@link Group} with given attributes
      *
      * @param body JSON {@link Map} of {@link Group} attributes
-     * @param response HTTP response
      * @return JSON {@link Map} of {@link Group}
      */
     @Override
     @Transactional
-    public Map groupsPost(Map<String, Object> body, HttpServletResponse response) {
+    public Map groupsPost(Map<String, Object> body) {
         Group newGroup = new Group(body, groupEntityMapper);
 
         newGroup.id = UUID.randomUUID().toString();
@@ -85,7 +81,6 @@ public class GroupsService implements IGroupsService {
             newGroup.setGroupMemberships(newMemberships);
         }
 
-        response.setStatus(201);
         return newGroup.toScimResource();
     }
 }

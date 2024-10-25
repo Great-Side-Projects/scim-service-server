@@ -59,7 +59,7 @@ public class ListResponse<T extends BaseModel> {
 
         //TODO: Refactor this to a more generic way
         //add group memberships to each user resource
-        if (groupMemberships != null || !groupMemberships.isEmpty()) {
+        if (groupMemberships != null && !groupMemberships.isEmpty()) {
             for (Map<String, Object> resource : resources) {
                 List<GroupMembership> memberships = groupMemberships.stream()
                         .filter(gm -> {
@@ -74,7 +74,6 @@ public class ListResponse<T extends BaseModel> {
                         return member.toUserScimResource();
                     return member.toScimResource();
                 }).collect(Collectors.toList());
-
 
                 if (list.getFirst() instanceof User) {
                     resource.put("groups", groupMemberships);
