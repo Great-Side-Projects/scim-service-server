@@ -6,6 +6,7 @@ import com.service.scim.repositories.IGroupRepository;
 import com.service.scim.repositories.IGroupMembershipRepository;
 import com.service.scim.models.Group;
 import com.service.scim.models.GroupMembership;
+import com.service.scim.repositories.IUserRepository;
 import com.service.scim.services.factories.PatchOperationFactory;
 import com.service.scim.utils.MapConverter;
 import com.service.scim.utils.PageRequestBuilder;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // Add this import statement to update
+
 import java.util.*;
 
 @Service
@@ -22,16 +24,21 @@ public class SingleGroupsService implements ISingleGroupsService {
     private final IGroupMembershipRepository groupMembershipRepository;
     private final AbstractEntityMapper<Group> groupEntityMapper;
     private final PatchOperationFactory patchOperationFactory;
+    private final IUserRepository userRepository;
 
     @Autowired
     public SingleGroupsService(IGroupRepository groupRepository,
                                IGroupMembershipRepository groupMembershipRepository,
-                               AbstractEntityMapper<Group> groupEntityMapper, PatchOperationFactory patchOperationFactory) {
+                               AbstractEntityMapper<Group> groupEntityMapper,
+                               PatchOperationFactory patchOperationFactory,
+                               IUserRepository userRepository
+    ) {
 
         this.groupRepository = groupRepository;
         this.groupMembershipRepository = groupMembershipRepository;
         this.groupEntityMapper = groupEntityMapper;
         this.patchOperationFactory = patchOperationFactory;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -73,7 +80,7 @@ public class SingleGroupsService implements ISingleGroupsService {
     public Map singleGroupPut(Map<String, Object> payload, String id) {
         Optional<Group> oGroup = groupRepository.findById(id);
         if (oGroup.isEmpty()) {
-           return Map.of();
+            return Map.of();
         }
         Group group = oGroup.get();
 
@@ -88,7 +95,8 @@ public class SingleGroupsService implements ISingleGroupsService {
             ArrayList<Map<String, Object>> members = (ArrayList<Map<String, Object>>) payload.get("members");
             List<GroupMembership> newMemberships = members.stream()
                     .filter(member ->
-                            !groupMembershipRepository.existsByGroupIdAndUserId(group.id, member.get("value").toString())
+                            (!groupMembershipRepository.existsByGroupIdAndUserId(group.id, member.get("value").toString()) &&
+                                    userRepository.existsById(member.get("value").toString()))
                     )
                     .map(member -> new GroupMembership(member, group.id, group.displayName)).toList();
 
@@ -144,21 +152,21 @@ public class SingleGroupsService implements ISingleGroupsService {
     /**
      * Deletes {@link Group} with identifier
      *
-     * @param id       {@link Group#id}
+     * @param id {@link Group#id}
      * @return JSON {@link Map} of {@link Group}
      */
     @Override
     @Transactional
     public Map singeGroupDelete(String id) {
-            Optional<Group> group = groupRepository.findById(id);
-            if (group.isEmpty()) {
-                return Map.of();
-            }
+        Optional<Group> group = groupRepository.findById(id);
+        if (group.isEmpty()) {
+            return Map.of();
+        }
 
-            Page<GroupMembership> toDelete = groupMembershipRepository.findByGroupId(id, PageRequestBuilder.build());
-            groupMembershipRepository.deleteAll(toDelete);
-            groupRepository.delete(group.get());
+        Page<GroupMembership> toDelete = groupMembershipRepository.findByGroupId(id, PageRequestBuilder.build());
+        groupMembershipRepository.deleteAll(toDelete);
+        groupRepository.delete(group.get());
 
-            return group.get().toScimResource();
+        return group.get().toScimResource();
     }
 }

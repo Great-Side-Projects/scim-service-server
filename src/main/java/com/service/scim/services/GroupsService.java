@@ -5,6 +5,7 @@ import com.service.scim.repositories.IGroupRepository;
 import com.service.scim.repositories.IGroupMembershipRepository;
 import com.service.scim.models.Group;
 import com.service.scim.models.GroupMembership;
+import com.service.scim.repositories.IUserRepository;
 import com.service.scim.services.specifications.FilterSpecifications;
 import com.service.scim.utils.ListResponse;
 import com.service.scim.utils.PageRequestBuilder;
@@ -21,12 +22,14 @@ public class GroupsService implements IGroupsService {
     private final IGroupRepository groupRepository;
     private final IGroupMembershipRepository groupMembershipRepository;
     private final AbstractEntityMapper<Group> groupEntityMapper;
+    private final IUserRepository userRepository;
 
     @Autowired
-    public GroupsService(IGroupRepository groupRepository, IGroupMembershipRepository groupMembershipRepository, AbstractEntityMapper<Group> groupEntityMapper) {
+    public GroupsService(IGroupRepository groupRepository, IGroupMembershipRepository groupMembershipRepository, AbstractEntityMapper<Group> groupEntityMapper, IUserRepository userRepository) {
         this.groupRepository = groupRepository;
         this.groupMembershipRepository = groupMembershipRepository;
         this.groupEntityMapper = groupEntityMapper;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -68,6 +71,10 @@ public class GroupsService implements IGroupsService {
     public Map groupsPost(Map<String, Object> body) {
         Group newGroup = new Group(body, groupEntityMapper);
 
+        if (groupRepository.existsByDisplayName(newGroup.displayName)) {
+            return Map.of();
+        }
+
         newGroup.id = UUID.randomUUID().toString();
         groupRepository.save(newGroup);
 
@@ -75,6 +82,10 @@ public class GroupsService implements IGroupsService {
             ArrayList<Map<String, Object>> members = (ArrayList<Map<String, Object>>) body.get("members");
 
             List<GroupMembership> newMemberships = members.stream()
+                    .filter(member ->
+                            (!groupMembershipRepository.existsByGroupIdAndUserId(newGroup.id, member.get("value").toString()) &&
+                                    userRepository.existsById(member.get("value").toString()))
+                    )
                     .map(member -> new GroupMembership(member, newGroup.id, newGroup.displayName)).toList();
 
             groupMembershipRepository.saveAll(newMemberships);

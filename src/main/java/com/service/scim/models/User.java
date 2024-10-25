@@ -3,6 +3,8 @@ package com.service.scim.models;
 import com.service.scim.models.mapper.UserEntityMapper;
 import com.service.scim.triggers.UserTrailListener;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 /**
@@ -229,6 +231,10 @@ public class User extends BaseModel {
 
     @Transient
     private Boolean statusChanged = false;
+
+    @Column(nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    public LocalDateTime createdAt = LocalDateTime.now(ZoneOffset.UTC);
 
     public User() {
     }

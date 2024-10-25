@@ -1,6 +1,5 @@
 package com.service.scim.services;
 import com.service.scim.models.User;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 public interface IUsersService {

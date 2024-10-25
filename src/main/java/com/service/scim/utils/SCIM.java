@@ -9,6 +9,7 @@ public class SCIM {
     public static final String OPERATIONS_ERROR_MSG = "Payload must contain operations attribute.";
     public static final String SCHEMA_NOT_SUPPORTED_MSG = "The 'schemas' type in this request is not supported.";
     public static final String USER_NOT_FOUND = "User '%s' was not found.";
+    public static final String GROUP_ALREADY_EXISTS = "Group '%s' already exists.";
 
     /**
      * Output custom error message with response code

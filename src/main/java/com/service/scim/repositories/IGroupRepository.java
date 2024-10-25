@@ -32,4 +32,12 @@ public interface IGroupRepository extends JpaRepository<Group, String>, JpaSpeci
      */
     @Query("SELECT g FROM Group g WHERE g.displayName = :name")
     Page<Group> findByDisplayName(@Param("name") String name, Pageable pagable);
+
+    /**
+     * Checks if a {@link Group} with the given userDisplay name exists
+     * @param name The userDisplay name to search
+     * @return A boolean value indicating if the {@link Group} exists
+     */
+    @Query("SELECT CASE WHEN COUNT(g) > 0 THEN TRUE ELSE FALSE END FROM Group g WHERE g.displayName = :name")
+    Boolean existsByDisplayName(@Param("name") String name);
 }
