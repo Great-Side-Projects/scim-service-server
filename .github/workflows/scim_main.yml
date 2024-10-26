@@ -56,7 +56,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_SCIM }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: mvn -B -f ${{env.WORKING_DIRECTORY}}/pom.xml verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=scim-service-server -Dsonar.projectName='scim-service-server'
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=scim-service-server -Dsonar.projectName='scim-service-server'
 
   build-and-deploy:
     name: Build and deploy
@@ -91,8 +91,8 @@ jobs:
       - name: Build and push container image to registry
         uses: docker/build-push-action@v5
         with:
-          #context: ${{ env.WORKING_DIRECTORY }}
-          #file: ${{ env.WORKING_DIRECTORY }}${{ env.DOCKERFILE }}
+          context: .
+          file: ./Dockerfile
           push: true
           tags: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.WEBAPP_NAME }}:${{ github.sha }}
           build-args: |
