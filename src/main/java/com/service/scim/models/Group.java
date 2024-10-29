@@ -61,6 +61,7 @@ public class Group extends BaseModel {
      * @return JSON {@link Map} of {@link Group}
      */
     @Override
+    //TODO: Refactor to use SCIM class
     public HashMap<String, Object> toScimResource() {
         HashMap<String, Object> returnValue = new HashMap<>();
         List<String> schemas = new ArrayList<>();

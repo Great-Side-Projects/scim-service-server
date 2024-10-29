@@ -4,7 +4,6 @@ import com.service.scim.models.Group;
 import com.service.scim.models.GroupMembership;
 import com.service.scim.repositories.IGroupMembershipRepository;
 import com.service.scim.repositories.IUserRepository;
-
 import java.util.*;
 
 public class AddMembersStrategy implements IPatchOperationStrategy<Group> {
@@ -35,7 +34,6 @@ public class AddMembersStrategy implements IPatchOperationStrategy<Group> {
         members.forEach(member -> {
             String userId = member.get("value").toString();
             if (!groupMembershipRepository.existsByGroupIdAndUserId(group.id, userId) && userRepository.existsById(userId)) {
-                //GroupMembership membership = createMembership(group, userId, userNames.get(userId));
                 GroupMembership membership = new GroupMembership(member, group.id, group.displayName);
                 membership.userDisplay = userNames.get(userId);
                 membershipsToAdd.add(membership);

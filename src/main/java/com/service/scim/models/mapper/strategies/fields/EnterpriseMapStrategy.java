@@ -1,7 +1,6 @@
 package com.service.scim.models.mapper.strategies.fields;
 
 import com.service.scim.models.User;
-
 import java.util.Map;
 
 public class EnterpriseMapStrategy implements IMapStrategy<User> {

@@ -34,7 +34,7 @@ public class SCIM {
         return email != null && email.matches("^(?!\\.)[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(?<!\\.)@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$");
     }
 
-    public static boolean isValidUserName (String userName) {
+    public static boolean isValidUserName(String userName) {
         return userName != null && !userName.isEmpty();
     }
 }

@@ -16,8 +16,9 @@ public class GroupEntityMapper extends AbstractEntityMapper<Group> {
 
     @Override
     protected Map<String, IMapStrategy<Group>> initializeStrategies() {
-        // add the strategies for the Group fields here
-        //strategy.put("members", new MemberMapStrategy());
+        // create the strategies for the entity fields and add them to the map of strategies for the entity
+        // Example: strategy.put("addresses", new AddressMapStrategy());
+        // Example: strategy.put("members", new MemberMapStrategy());
         return new HashMap<>();
     }
     @Override

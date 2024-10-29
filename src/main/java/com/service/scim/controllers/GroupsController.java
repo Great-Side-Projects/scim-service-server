@@ -7,10 +7,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Map;
 import java.util.Optional;
-
 import static com.service.scim.utils.SCIM.GROUP_ALREADY_EXISTS;
 import static com.service.scim.utils.SCIM.scimError;
 

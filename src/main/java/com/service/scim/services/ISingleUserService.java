@@ -1,6 +1,5 @@
 package com.service.scim.services;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 public interface ISingleUserService {

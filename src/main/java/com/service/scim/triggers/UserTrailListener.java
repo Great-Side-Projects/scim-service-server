@@ -10,31 +10,29 @@ public class UserTrailListener {
 
     private final static Logger logger = LoggerFactory.getLogger(UserTrailListener.class);
 
-    //cunado se genere la creacion de un usuario en la base de datos interna se lanzara este trigger como respuesta
     @PostPersist
-    private void afterCreation(User user)
-    {
-        System.out.println("Ususario creado: id:"+user.id);
-        logger.info("Ususario Creado: id:"+user.id);
+    private void afterCreation(User user) {
+        //Todo: connect to external service to notify the creation of a new user
+        System.out.println("User Created: id:" + user.id);
+        logger.info("User Created: id:" + user.id);
     }
 
-    //cunado se genere la actualizacion de un usuario en la base de datos interna se lanzara este trigger como respuesta
     @PostUpdate
-    private void afterUpdate(User user)
-    {
+    private void afterUpdate(User user) {
+        //Todo: connect to external service to notify the update of a user
         if (!user.getStatusChanged()) {
-            System.out.println("sin cambios de estado en el usuario: id:" + user.id);
-            logger.info("sin cambios de estado en el usuario: id:" + user.id);
+            System.out.println("There are no changes in the user's status. id:" + user.id);
+            logger.info("There are no changes in the user's status. id:" + user.id);
             return;
         }
 
-            if (user.active) {
-                System.out.println("Ususario Activado: id:" + user.id);
-                logger.info("Ususario Activado: id:" + user.id);
-            }
-            if (!user.active) {
-                System.out.println("Ususario desactivado: id:" + user.id);
-                logger.info("Ususario desactivado: id:" + user.id);
-            }
+        if (user.active) {
+            System.out.println("User Activated: id:" + user.id);
+            logger.info("User Activated: id:" + user.id);
+        }
+        if (!user.active) {
+            System.out.println("User Deactivated: id:" + user.id);
+            logger.info("User Deactivated: id:" + user.id);
+        }
     }
 }

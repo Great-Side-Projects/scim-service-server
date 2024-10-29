@@ -37,7 +37,7 @@ public class FilterSpecifications {
                                 predicates.add(criteriaBuilder.like(root.get(key), "%" + value + "%"));
                             }
                             break;
-                        // añadir más casos según otros atributos y operadores
+                        // add more cases here for other fields in your entity class if needed
                     }
                 }
             }

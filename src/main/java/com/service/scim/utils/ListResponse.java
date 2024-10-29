@@ -3,7 +3,6 @@ package com.service.scim.utils;
 import com.service.scim.models.BaseModel;
 import com.service.scim.models.GroupMembership;
 import com.service.scim.models.User;
-
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -92,7 +91,6 @@ public class ListResponse<T extends BaseModel> {
         }
 
         returnValue.put("Resources", resources);
-
         return returnValue;
     }
 }

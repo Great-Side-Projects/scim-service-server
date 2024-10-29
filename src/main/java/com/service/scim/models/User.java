@@ -272,6 +272,7 @@ public class User extends BaseModel {
      * @return JSON {@link Map} of {@link User}
      */
     @Override
+    // TODO: Refactor to use SCIM class
     public Map toScimResource() {
         Map<String, Object> returnValue = new HashMap<>();
         List<String> schemas = new ArrayList<>();
