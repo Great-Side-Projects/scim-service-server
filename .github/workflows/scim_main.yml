@@ -23,8 +23,6 @@ on:
 env:
   AZURE_CONTAINER_REGISTRY: scimserviceserver
   WEBAPP_NAME: scim-service-server
-  WORKING_DIRECTORY: ./
-  #DOCKERFILE: Dockerfile
 
 jobs:
   build-and-analyze:
@@ -56,6 +54,9 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_SCIM }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SPRING_DATASOURCE_URL: ${{ secrets.DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=scim-service-server -Dsonar.projectName='scim-service-server'
 
   build-and-deploy:
