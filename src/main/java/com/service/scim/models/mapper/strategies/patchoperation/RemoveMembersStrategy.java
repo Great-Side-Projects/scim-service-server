@@ -20,6 +20,9 @@ public class RemoveMembersStrategy implements IPatchOperationStrategy<Group> {
     @Override
     public void execute(Group entity, List<Map<String, Object>> members) {
 
+        if (members == null || members.isEmpty())
+            return;
+
         List<GroupMembership> membershipsToRemove = members.stream()
                 .map(member -> {
                     String userId = member.get("value").toString();

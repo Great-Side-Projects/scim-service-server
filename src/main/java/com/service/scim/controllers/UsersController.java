@@ -1,6 +1,7 @@
 package com.service.scim.controllers;
 
 import com.service.scim.models.User;
+import com.service.scim.models.mapper.AbstractEntityMapper;
 import com.service.scim.models.mapper.UserEntityMapper;
 import com.service.scim.services.IUsersService;
 import com.service.scim.utils.SCIM;
@@ -19,10 +20,10 @@ import static com.service.scim.utils.SCIM.scimError;
 public class UsersController {
 
     private final IUsersService usersService;
-    private final UserEntityMapper userEntityMapper;
+    private final AbstractEntityMapper<User> userEntityMapper;
 
     @Autowired
-    public UsersController(IUsersService usersService, UserEntityMapper userEntityMapper) {
+    public UsersController(IUsersService usersService, AbstractEntityMapper<User> userEntityMapper) {
         this.usersService = usersService;
         this.userEntityMapper = userEntityMapper;
     }

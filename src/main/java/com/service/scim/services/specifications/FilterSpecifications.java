@@ -10,7 +10,8 @@ import java.util.regex.Pattern;
 
 public class FilterSpecifications {
 
-    public static <T> Specification<T> createSpecification(Map<String, String> params) {
+    public static <T> Specification<T>
+    createSpecification(Map<String, String> params) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 

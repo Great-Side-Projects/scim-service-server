@@ -1,6 +1,6 @@
 package com.service.scim.services;
 
-import com.service.scim.models.mapper.UserEntityMapper;
+import com.service.scim.models.mapper.AbstractEntityMapper;
 import com.service.scim.repositories.IUserRepository;
 import com.service.scim.models.User;
 import com.service.scim.utils.MapConverter;
@@ -13,9 +13,9 @@ import java.util.*;
 public class SingleUserService implements ISingleUserService {
 
     private final IUserRepository userRepository;
-    private final UserEntityMapper userEntityMapper;
+    private final AbstractEntityMapper<User> userEntityMapper;
 
-    public SingleUserService(IUserRepository userDatabase, IUserRepository userRepository, UserEntityMapper userEntityMapper) {
+    public SingleUserService(IUserRepository userRepository, AbstractEntityMapper<User> userEntityMapper) {
         this.userRepository = userRepository;
         this.userEntityMapper = userEntityMapper;
     }

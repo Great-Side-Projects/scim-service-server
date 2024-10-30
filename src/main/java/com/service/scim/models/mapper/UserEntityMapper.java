@@ -24,6 +24,9 @@ public class UserEntityMapper extends AbstractEntityMapper<User> {
     }
     @Override
     public final void update(User entity, Map<String, Object> resource) {
+        if (resource == null)
+            return;
+
         super.update(entity, resource);
     }
 }

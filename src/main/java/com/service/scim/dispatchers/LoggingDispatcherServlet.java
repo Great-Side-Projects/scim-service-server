@@ -21,7 +21,7 @@ import java.net.URLDecoder;
  */
 public class LoggingDispatcherServlet extends DispatcherServlet {
     @Autowired
-    ITransactionRepository transactionDatabase;
+    ITransactionRepository transactionRepository;
 
     private Logger logger = LoggerFactory.getLogger(LoggingDispatcherServlet.class);
 
@@ -65,7 +65,7 @@ public class LoggingDispatcherServlet extends DispatcherServlet {
                 .setResponseBody(getResponsePayload(responseToCache))
                 .setRequestId(requestToCache.getAttribute("rid").toString());
 
-        transactionDatabase.save(req);
+        transactionRepository.save(req);
     }
 
     /**

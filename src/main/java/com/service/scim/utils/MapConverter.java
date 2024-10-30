@@ -21,6 +21,9 @@ public class MapConverter {
 
     private static Object convertValue(String path, Object value) {
 
+        if (value == null)
+            return null;
+
         if ("active".equals(path)) {
             return Boolean.parseBoolean(value.toString());
         }

@@ -38,7 +38,7 @@ public class Group extends BaseModel {
 
     public Group() {}
 
-    public Group(Map<String, Object> resource, AbstractEntityMapper groupEntityMapper) {
+    public Group(Map<String, Object> resource, AbstractEntityMapper<Group> groupEntityMapper) {
         this.update(resource,groupEntityMapper);
     }
 
@@ -46,7 +46,7 @@ public class Group extends BaseModel {
      * Updates {@link Group} object from JSON {@link Map}
      * @param resource JSON {@link Map} of {@link Group}
      */
-    public void update(Map<String, Object> resource, AbstractEntityMapper groupEntityMapper) {
+    public void update(Map<String, Object> resource, AbstractEntityMapper<Group> groupEntityMapper) {
         try{
             if (resource.containsKey("displayName"))
                 this.displayName = resource.get("displayName").toString();

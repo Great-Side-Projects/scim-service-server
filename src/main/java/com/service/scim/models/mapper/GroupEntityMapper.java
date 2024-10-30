@@ -23,6 +23,9 @@ public class GroupEntityMapper extends AbstractEntityMapper<Group> {
     }
     @Override
     public final void update(Group entity, Map<String, Object> resource) {
+        if (resource == null)
+            return;
+
         super.update(entity, resource);
     }
 }

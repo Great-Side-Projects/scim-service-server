@@ -17,6 +17,10 @@ public class AddMembersStrategy implements IPatchOperationStrategy<Group> {
 
     @Override
     public void execute(Group entity, List<Map<String, Object>> members) {
+
+        if (members == null || members.isEmpty())
+            return;
+
         List<String> userIds = members.stream()
                 .map(member -> member.get("value").toString())
                 .toList();

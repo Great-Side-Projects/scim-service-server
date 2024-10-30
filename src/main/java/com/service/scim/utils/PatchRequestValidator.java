@@ -14,7 +14,11 @@ public class PatchRequestValidator {
         if (schema == null) {
             return scimError(SCHEMA_ERROR_MSG, Optional.of(400));
         }
-        if (operations == null) {
+        if (operations == null ) {
+            return scimError(OPERATIONS_ERROR_MSG, Optional.of(400));
+        }
+
+        if (operations.isEmpty()) {
             return scimError(OPERATIONS_ERROR_MSG, Optional.of(400));
         }
 

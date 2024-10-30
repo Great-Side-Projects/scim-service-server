@@ -22,6 +22,9 @@ public class PatchOperationFactory {
     }
 
     public IPatchOperationStrategy getStrategy(String operation) {
+        if (operation == null) {
+            throw new UnsupportedOperationException("Operation not supported: null");
+        }
         return Optional.ofNullable(strategies.get(operation))
                 .orElseThrow(() -> new UnsupportedOperationException(
                         "Operation not supported: " + operation));

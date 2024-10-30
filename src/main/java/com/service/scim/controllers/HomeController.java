@@ -15,24 +15,24 @@ import java.util.List;
 @Controller
 @RequestMapping("/")
 public class HomeController {
-    private final IUserRepository userDatabase;
-    private final IGroupRepository groupDatabase;
-    private final ITransactionRepository transactionDatabase;
-    private final IRequestRepository requestDatabase;
-    private final IGroupMembershipRepository groupMembershipDatabase;
+    private final IUserRepository userRepository;
+    private final IGroupRepository groupRepository;
+    private final ITransactionRepository transactionRepository;
+    private final IRequestRepository requestRepository;
+    private final IGroupMembershipRepository groupMembershipRepository;
 
     @Autowired
     public HomeController(
-            IUserRepository userDatabase,
-            IGroupRepository groupDatabase,
-            ITransactionRepository transactionDatabase,
-            IRequestRepository requestDatabase,
-            IGroupMembershipRepository groupMembershipDatabase) {
-        this.userDatabase = userDatabase;
-        this.groupDatabase = groupDatabase;
-        this.transactionDatabase = transactionDatabase;
-        this.requestDatabase = requestDatabase;
-        this.groupMembershipDatabase = groupMembershipDatabase;
+            IUserRepository userRepository,
+            IGroupRepository groupRepository,
+            ITransactionRepository transactionRepository,
+            IRequestRepository requestRepository,
+            IGroupMembershipRepository groupMembershipRepository) {
+        this.userRepository = userRepository;
+        this.groupRepository = groupRepository;
+        this.transactionRepository = transactionRepository;
+        this.requestRepository = requestRepository;
+        this.groupMembershipRepository = groupMembershipRepository;
     }
 
     /**
@@ -42,11 +42,11 @@ public class HomeController {
      */
     @RequestMapping(method = RequestMethod.GET)
     public String home(ModelMap model) {
-        List<User> users = userDatabase.findAll();
-        List<Group> groups = groupDatabase.findAll();
-        List<Transaction> transactions = transactionDatabase.findAll();
-        List<Request> requests = requestDatabase.findAll();
-        List<GroupMembership> groupMemberships = groupMembershipDatabase.findAll();
+        List<User> users = userRepository.findAll();
+        List<Group> groups = groupRepository.findAll();
+        List<Transaction> transactions = transactionRepository.findAll();
+        List<Request> requests = requestRepository.findAll();
+        List<GroupMembership> groupMemberships = groupMembershipRepository.findAll();
         model.addAttribute("users", users);
         model.addAttribute("groups", groups);
         model.addAttribute("transactions", transactions);

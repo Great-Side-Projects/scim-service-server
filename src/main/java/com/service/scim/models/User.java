@@ -1,6 +1,6 @@
 package com.service.scim.models;
 
-import com.service.scim.models.mapper.UserEntityMapper;
+import com.service.scim.models.mapper.AbstractEntityMapper;
 import com.service.scim.triggers.UserTrailListener;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -242,7 +242,7 @@ public class User extends BaseModel {
     public User() {
     }
 
-    public User(Map<String, Object> resource, UserEntityMapper userEntityMapper) {
+    public User(Map<String, Object> resource, AbstractEntityMapper<User> userEntityMapper) {
         this.update(resource, userEntityMapper);
     }
 
@@ -251,7 +251,7 @@ public class User extends BaseModel {
      *
      * @param resource JSON {@link Map} of {@link User}
      */
-    public void update(Map<String, Object> resource, UserEntityMapper userEntityMapper) {
+    public void update(Map<String, Object> resource, AbstractEntityMapper<User> userEntityMapper) {
         try {
 
             if (resource.containsKey("active")) {
