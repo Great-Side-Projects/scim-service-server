@@ -14,6 +14,10 @@ public class GroupEntityMapper extends AbstractEntityMapper<Group> {
         super(new GenericMapStrategy<>(Group.class));
     }
 
+    public GroupEntityMapper(IMapStrategy<Group> defaultGenericMapStrategy) {
+        super(defaultGenericMapStrategy);
+    }
+
     @Override
     protected Map<String, IMapStrategy<Group>> initializeStrategies() {
         // create the strategies for the entity fields and add them to the map of strategies for the entity

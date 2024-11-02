@@ -25,6 +25,7 @@ public class GroupEntityMapperTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        groupEntityMapper = new GroupEntityMapper(genericMapStrategy);
         group = new Group();
     }
 
@@ -35,7 +36,7 @@ public class GroupEntityMapperTest {
 
         groupEntityMapper.update(group, resource);
 
-        verify(genericMapStrategy, times(0)).applyUpdate(eq(group), eq("name"), eq("New Group Name"));
+        verify(genericMapStrategy, times(1)).applyUpdate(eq(group), eq("displayName"), eq("New Group Name"));
     }
 
 

@@ -11,7 +11,7 @@ public abstract class AbstractEntityMapper<T> {
         this.updateStrategy = new UpdateStrategy<>(mapStrategies, defaultGenericMapStrategy);
     }
     // The update strategy for the entity
-    protected UpdateStrategy<T> updateStrategy;
+    public UpdateStrategy<T> updateStrategy;
 
     // Initialize the strategies for the entity
     protected abstract Map<String, IMapStrategy<T>> initializeStrategies();

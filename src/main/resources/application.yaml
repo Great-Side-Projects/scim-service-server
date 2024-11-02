@@ -1,0 +1,52 @@
+server:
+    port: 8080
+    compression:
+        enabled: true
+        mime-types: text/html, text/xml, text/plain, text/css, text/javascript, application/javascript, application/json
+        min-response-size: 2048
+spring:
+  main:
+    banner-mode: off
+  application:
+        name: scim-service-server
+  datasource:
+    url: jdbc:mysql://localhost:3306/scim?useSSL=false
+    username: user
+    password: password
+    tomcat:
+      max-active: 2
+    hikari:
+      max-lifetime: 300
+      maximum-pool-size: 3
+      #driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5Dialect
+        default_schema: scim
+        show_sql: true
+        dll-auto: update
+        hbm2ddl:
+          auto: update
+
+#Swagger configuration
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+  open-api:
+    info:
+      title: SCIM Service Server
+      description: SCIM Service Server API
+      version: 1.0.0
+      #termsOfService: http://swagger.io/terms/
+      license:
+        name: No License
+        url:   https://github.com/Great-Side-Projects/scim-service-server
+      contact:
+        name: Angel Morales
+        email: angelmoralesb@gmail.com
+

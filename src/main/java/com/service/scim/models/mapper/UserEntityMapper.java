@@ -13,6 +13,10 @@ public class UserEntityMapper extends AbstractEntityMapper<User> {
         super(new GenericMapStrategy<>(User.class));
     }
 
+    public UserEntityMapper(IMapStrategy<User> genericMapStrategy) {
+        super(genericMapStrategy);
+    }
+
     @Override
     protected Map<String, IMapStrategy<User>> initializeStrategies() {
         Map<String, IMapStrategy<User>> strategy = new HashMap<>();

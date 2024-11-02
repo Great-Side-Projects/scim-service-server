@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class UpdateStrategy<T> {
 
-    protected Map<String, IMapStrategy<T>> strategies;
+    public Map<String, IMapStrategy<T>> strategies;
     protected IMapStrategy<T> defaultGenericMapStrategy;
 
     public UpdateStrategy(Map<String, IMapStrategy<T>> strategies, IMapStrategy<T> defaultGenericMapStrategy) {
