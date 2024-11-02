@@ -6,9 +6,9 @@ import jakarta.persistence.PostUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UserTrailListener {
+public class UserListener {
 
-    private final static Logger logger = LoggerFactory.getLogger(UserTrailListener.class);
+    private final static Logger logger = LoggerFactory.getLogger(UserListener.class);
 
     @PostPersist
     private void afterCreation(User user) {

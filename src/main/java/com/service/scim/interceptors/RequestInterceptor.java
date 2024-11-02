@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Intercepts all requests for logging purposes
@@ -28,7 +29,7 @@ public class RequestInterceptor implements HandlerInterceptor {
                 .generateId()
                 .setTimestamp()
                 .setMethod(request.getMethod())
-                .setEndpoint(request.getRequestURI() + (request.getQueryString() != null ? "?" + URLDecoder.decode(request.getQueryString(), "UTF-8") : ""));
+                .setEndpoint(request.getRequestURI() + (request.getQueryString() != null ? "?" + URLDecoder.decode(request.getQueryString(), StandardCharsets.UTF_8) : ""));
 
         request.setAttribute("rid", req.id);
 

@@ -14,11 +14,11 @@ import java.util.stream.Collectors;
  * Returns an array of SCIM resources into a Query Resource
  */
 public class ListResponse<T extends BaseModel> {
-    private List<T> list;
+    private final List<T> list;
     private List<GroupMembership> groupMemberships;
-    private int startIndex;
+    private final int startIndex;
     private int count;
-    private int totalResults;
+    private final int totalResults;
 
     public ListResponse() {
         this.list = new ArrayList<>();

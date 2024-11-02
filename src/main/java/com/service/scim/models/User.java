@@ -1,7 +1,7 @@
 package com.service.scim.models;
 
 import com.service.scim.models.mapper.AbstractEntityMapper;
-import com.service.scim.triggers.UserTrailListener;
+import com.service.scim.triggers.UserListener;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -11,7 +11,7 @@ import java.util.*;
  * Database schema for {@link User}
  */
 @Entity
-@EntityListeners(UserTrailListener.class)
+@EntityListeners(UserListener.class)
 @Table(name = "users")
 public class User extends BaseModel {
     /**

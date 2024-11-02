@@ -1,7 +1,6 @@
 package com.service.scim.models.mapper.strategies.entities;
 
 import com.service.scim.models.mapper.strategies.fields.IMapStrategy;
-import java.util.ArrayList;
 import java.util.Map;
 
 public class UpdateStrategy<T> {
@@ -18,10 +17,7 @@ public class UpdateStrategy<T> {
         resource.forEach((field, value) -> {
 
             IsMapRecursively(entity, value);
-            // Check if the value is a list or a map and call the update method recursively
-            if (value instanceof ArrayList<?> MyArrayList) {
-                MyArrayList.forEach(subResource -> IsMapRecursively(entity, subResource));
-            }
+
             IMapStrategy<T> strategy = strategies.getOrDefault(field, defaultGenericMapStrategy);
             strategy.applyUpdate(entity, field, value);
         });

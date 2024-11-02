@@ -15,6 +15,7 @@ import org.springframework.web.util.WebUtils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Dispatch Servlet to log all transactions
@@ -23,7 +24,7 @@ public class LoggingDispatcherServlet extends DispatcherServlet {
     @Autowired
     ITransactionRepository transactionRepository;
 
-    private Logger logger = LoggerFactory.getLogger(LoggingDispatcherServlet.class);
+    private final Logger logger = LoggerFactory.getLogger(LoggingDispatcherServlet.class);
 
     @Override
     protected void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -59,7 +60,7 @@ public class LoggingDispatcherServlet extends DispatcherServlet {
                 .setTimestamp()
                 .setMethod(requestToCache.getMethod())
                 .setHttpCode(responseToCache.getStatus())
-                .setEndpoint(requestToCache.getRequestURI() + (requestToCache.getQueryString() != null ? "?" + URLDecoder.decode(requestToCache.getQueryString(), "UTF-8") : ""))
+                .setEndpoint(requestToCache.getRequestURI() + (requestToCache.getQueryString() != null ? "?" + URLDecoder.decode(requestToCache.getQueryString(), StandardCharsets.UTF_8) : ""))
                 .setJavaMethod(handler.toString())
                 .setRequestBody(getRequestPayload(requestToCache))
                 .setResponseBody(getResponsePayload(responseToCache))

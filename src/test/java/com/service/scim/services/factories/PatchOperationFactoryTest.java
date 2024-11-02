@@ -1,8 +1,6 @@
 package com.service.scim.services.factories;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 import com.service.scim.models.mapper.strategies.patchoperation.AddMembersStrategy;
 import com.service.scim.models.mapper.strategies.patchoperation.IPatchOperationStrategy;
 import com.service.scim.models.mapper.strategies.patchoperation.RemoveMembersStrategy;
@@ -34,13 +32,13 @@ public class PatchOperationFactoryTest {
     @Test
     void getStrategyReturnsAddMembersStrategy() {
         IPatchOperationStrategy strategy = patchOperationFactory.getStrategy("Add");
-        assertTrue(strategy instanceof AddMembersStrategy);
+        assertInstanceOf(AddMembersStrategy.class, strategy);
     }
 
     @Test
     void getStrategyReturnsRemoveMembersStrategy() {
         IPatchOperationStrategy strategy = patchOperationFactory.getStrategy("Remove");
-        assertTrue(strategy instanceof RemoveMembersStrategy);
+        assertInstanceOf(RemoveMembersStrategy.class, strategy);
     }
 
     @Test
