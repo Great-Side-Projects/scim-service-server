@@ -25,7 +25,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/Great-Side-Projects/scim-service-server">
-    <img src="https://scim.cloud/img/logo/SCIM_B-and-W_72x24.png" alt="Logo">
+    <img src="https://scim.cloud/img/logo/SCIM_B-and-W_72x24.png" alt="Logo" width="200">
   </a>
 
 <h3 align="center">SCIM Service Server</h3>
