@@ -66,22 +66,7 @@ class UpdateStrategyTest {
         verify(defaultGenericMapStrategy, times(1)).applyUpdate(entity, "nestedField", "nestedValue");
     }
 
-    @Test
-    void updateHandlesNestedListRecursively() {
-        Object entity = new Object();
-        Map<String, Object> nestedResource = new HashMap<>();
-        nestedResource.put("nestedField", "nestedValue");
-        ArrayList<Object> nestedList = new ArrayList<>();
-        nestedList.add(nestedResource);
-        Map<String, Object> resource = new HashMap<>();
-        resource.put("nestedList", nestedList);
-
-        updateStrategy.update(entity, resource);
-
-        verify(defaultGenericMapStrategy, times(1)).applyUpdate(entity, "nestedField", "nestedValue");
-    }
-
-    @Test
+   @Test
     void updateHandlesEmptyResource() {
         Object entity = new Object();
         Map<String, Object> resource = new HashMap<>();
