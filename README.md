@@ -506,6 +506,7 @@ This project was testing with the following IDPs with User and Group provisionin
 Map the user schemaSCIM vs database schema vs scim-service-server.
 
 Substitute this name en el field table
+
 **schemavalue=urn:ietf:params:scim:schemas:extension:enterprise:2.0
 
 the blank fields are not implemented yet.
