@@ -587,8 +587,6 @@ of the [SCIM 2.0 Protocol Specification](https://tools.ietf.org/html/rfc7644).
 
 ## Read Account Details: GET /Users/{id}
 
-Your SCIM 2.0 API must support fetching of users by user id.
-
 If we don't find a user, we return a HTTP status 404 ("Not found")
 with SCIM error message.
 
@@ -610,9 +608,9 @@ of the [SCIM 2.0 Protocol Specification](https://tools.ietf.org/html/rfc7644).
 Examples of filters SCIM API are as
 follows:
 
-> userName eq "jane@example.com"
+> userName eq "jhon@doe.com"
 
-> emails eq "jane@example.com"
+> emails eq "doe@doe.com"
 
 For more details on filtering in SCIM 2.0, see [section 3.4.2.2](https://tools.ietf.org/html/rfc7644#section-3.4.2.2)
 of the [SCIM 2.0 Protocol Specification](https://tools.ietf.org/html/rfc7644).
