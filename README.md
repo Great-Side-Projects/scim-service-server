@@ -887,6 +887,7 @@ Project Link: [https://github.com/Great-Side-Projects/scim-service-server](https
 * [SonnarQube comunity Edition](https://www.sonarsource.com/open-source-editions/sonarqube-community-edition/)
 * [GitHub Actions](https://docs.github.com/es/actions)
 * [Sonarqube Docker Web App on Linux with Azure SQL](https://learn.microsoft.com/en-us/samples/azure/azure-quickstart-templates/webapp-linux-sonarqube-azuresql/)
+* [Okta - sample-java-scim-server](https://github.com/andreihava-okta/sample-java-scim-server/tree/master)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
