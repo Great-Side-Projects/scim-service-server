@@ -713,6 +713,7 @@ Here is the specification for the `/ServiceProviderConfig` endpoint, from
 @PostPersist and @PostUpdate annotations are used to notify the creation and update of a user.
 The SCIM API must be able to integrate with external systems.
 
+https://www.baeldung.com/database-auditing-jpa
 ```java
   public class UserListener {
 
