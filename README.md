@@ -824,7 +824,8 @@ _For more examples, please refer to the [Documentation](https://scim-service-ser
 - [x] Implement CI/CD pipeline
 - [x] Implement unit tests
 - [x] Implement integration tests
-- [x] Implement audit
+- [x] Implement auditkmjnnnn
+- [ ] Refactor ListResponse and Resource SCIM Response Entities (toScimResource method)
 - [ ] Export option to substitute Map<> objects in the endpoints
 - [ ] Implement Authentication and Authorization for security
 - [ ] health check
