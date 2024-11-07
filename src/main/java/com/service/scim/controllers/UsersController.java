@@ -2,7 +2,6 @@ package com.service.scim.controllers;
 
 import com.service.scim.models.User;
 import com.service.scim.models.mapper.AbstractEntityMapper;
-import com.service.scim.models.mapper.UserEntityMapper;
 import com.service.scim.services.IUsersService;
 import com.service.scim.utils.SCIM;
 import org.springframework.beans.factory.annotation.Autowired;

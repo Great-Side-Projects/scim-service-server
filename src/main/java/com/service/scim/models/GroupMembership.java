@@ -1,10 +1,7 @@
 package com.service.scim.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import java.util.HashMap;
+import com.service.scim.models.mapper.strategies.formatter.GroupMembershipScimResourceFormatter;
+import jakarta.persistence.*;
 import java.util.Map;
 import java.util.UUID;
 
@@ -14,6 +11,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "groupmemberships")
 public class GroupMembership extends BaseModel {
+
+    @Transient
+    private GroupMembershipScimResourceFormatter scimResourceFormatter;
     /**
      * The unique identifier of the object
      * UUID4 following the RFC 7643 requirement
@@ -34,48 +34,43 @@ public class GroupMembership extends BaseModel {
     @Column
     public String userDisplay;
 
-    public GroupMembership() {}
-
-    public GroupMembership(Map<String, Object> resource, String groupId, String groupDisplay){
+    public GroupMembership(Map<String, Object> resource, String groupId, String groupDisplay) {
         this.update(resource);
         this.groupId = groupId;
         this.id = UUID.randomUUID().toString();
         this.groupDisplay = groupDisplay;
+        this.scimResourceFormatter = new GroupMembershipScimResourceFormatter();
+    }
+
+    public GroupMembership() {
+        this.scimResourceFormatter = new GroupMembershipScimResourceFormatter();
     }
 
     /**
      * Updates {@link GroupMembership} object from JSON {@link Map}
+     *
      * @param resource JSON {@link Map} of {@link GroupMembership}
      */
     public void update(Map<String, Object> resource) {
-        try{
+        try {
             this.userId = resource.get("value").toString();
             this.userDisplay = resource.getOrDefault("display", "").toString();
-        } catch(Exception e) {
+        } catch (Exception e) {
             System.out.println("Error updating fields groupmembership: " + e);
         }
     }
 
     /**
      * Formats JSON {@link Map} response with {@link Group} attributes.
+     *
      * @return JSON {@link Map} of {@link Group}
      */
     @Override
-    public Map toScimResource(){
-        Map<String, Object> returnValue = new HashMap<>();
-
-        returnValue.put("value", this.userId);
-        returnValue.put("display", this.userDisplay);
-
-        return returnValue;
+    public Map toScimResource() {
+        return this.scimResourceFormatter.toScimResource(this);
     }
 
     public Map toUserScimResource() {
-        Map<String, Object> returnValue = new HashMap<>();
-
-        returnValue.put("value", this.groupId);
-        returnValue.put("display", this.groupDisplay);
-
-        return returnValue;
+        return this.scimResourceFormatter.toUserScimResource(this);
     }
 }

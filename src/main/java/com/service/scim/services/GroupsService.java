@@ -1,10 +1,11 @@
 package com.service.scim.services;
 
-import com.service.scim.models.mapper.AbstractEntityMapper;
-import com.service.scim.repositories.IGroupRepository;
-import com.service.scim.repositories.IGroupMembershipRepository;
 import com.service.scim.models.Group;
 import com.service.scim.models.GroupMembership;
+import com.service.scim.models.mapper.AbstractEntityMapper;
+import com.service.scim.models.mapper.strategies.groupmembership.GroupMembershipAssignerStrategy;
+import com.service.scim.repositories.IGroupMembershipRepository;
+import com.service.scim.repositories.IGroupRepository;
 import com.service.scim.repositories.IUserRepository;
 import com.service.scim.services.specifications.FilterSpecifications;
 import com.service.scim.utils.ListResponse;
@@ -14,7 +15,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class GroupsService implements IGroupsService {
@@ -25,7 +29,10 @@ public class GroupsService implements IGroupsService {
     private final IUserRepository userRepository;
 
     @Autowired
-    public GroupsService(IGroupRepository groupRepository, IGroupMembershipRepository groupMembershipRepository, AbstractEntityMapper<Group> groupEntityMapper, IUserRepository userRepository) {
+    public GroupsService(IGroupRepository groupRepository,
+                         IGroupMembershipRepository groupMembershipRepository,
+                         AbstractEntityMapper<Group> groupEntityMapper,
+                         IUserRepository userRepository) {
         this.groupRepository = groupRepository;
         this.groupMembershipRepository = groupMembershipRepository;
         this.groupEntityMapper = groupEntityMapper;
@@ -49,13 +56,16 @@ public class GroupsService implements IGroupsService {
             List<String> groupsIds = groups.getContent().stream().map(group -> group.id).toList();
             groupMemberships = groupMembershipRepository.findByGroupIds(groupsIds, PageRequestBuilder.build());
         }
-        // Convert optional values into Optionals for ListResponse Constructor
-        ListResponse<Group> returnValue = new ListResponse<>(
-                foundGroups,
-                Optional.of(pageRequest.getPageNumber()),
-                Optional.of(pageRequest.getPageSize()),
-                Optional.of((int) groups.getTotalElements()),
-                groupMemberships.getContent());
+
+        GroupMembershipAssignerStrategy groupMembershipAssigner = new GroupMembershipAssignerStrategy(groupMemberships.getContent());
+
+        ListResponse<Group> returnValue = new ListResponse.Builder<Group>()
+                .withList(foundGroups)
+                .withStartIndex(pageRequest.getPageNumber())
+                .withCount(pageRequest.getPageSize())
+                .withTotalResults((int) groups.getTotalElements())
+                .withMembershipAssigner(groupMembershipAssigner)
+                .build();
 
         return returnValue.toScimResource();
     }
@@ -71,6 +81,7 @@ public class GroupsService implements IGroupsService {
     public Map groupsPost(Map<String, Object> body) {
         Group newGroup = new Group(body, groupEntityMapper);
 
+        // Check if group already exists
         if (groupRepository.existsByDisplayName(newGroup.displayName)) {
             return Map.of();
         }

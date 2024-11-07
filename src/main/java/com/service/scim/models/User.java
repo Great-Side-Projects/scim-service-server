@@ -1,6 +1,8 @@
 package com.service.scim.models;
 
 import com.service.scim.models.mapper.AbstractEntityMapper;
+import com.service.scim.models.mapper.strategies.formatter.IScimResourceFormatter;
+import com.service.scim.models.mapper.strategies.formatter.UserScimResourceFormatter;
 import com.service.scim.triggers.UserListener;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -18,6 +20,9 @@ public class User extends BaseModel {
      * The unique identifier of the user
      * UUID4 following the RFC 7643 requirement
      */
+    @Transient
+    private IScimResourceFormatter<User> userScimResourceFormatter;
+
     @Column(length = 36)
     @Id
     public String id;
@@ -240,9 +245,11 @@ public class User extends BaseModel {
     public LocalDateTime updatedAt;
 
     public User() {
+        this.userScimResourceFormatter = new UserScimResourceFormatter();
     }
 
     public User(Map<String, Object> resource, AbstractEntityMapper<User> userEntityMapper) {
+        this.userScimResourceFormatter = new UserScimResourceFormatter();
         this.update(resource, userEntityMapper);
     }
 
@@ -272,38 +279,8 @@ public class User extends BaseModel {
      * @return JSON {@link Map} of {@link User}
      */
     @Override
-    // TODO: Refactor to use SCIM class
+
     public Map toScimResource() {
-        Map<String, Object> returnValue = new HashMap<>();
-        List<String> schemas = new ArrayList<>();
-        schemas.add("urn:ietf:params:scim:schemas:core:2.0:User");
-        returnValue.put("schemas", schemas);
-        returnValue.put("id", this.id);
-        returnValue.put("active", this.active);
-        returnValue.put("userName", this.userName);
-
-        // Name
-        Map<String, Object> names = new HashMap<>();
-        names.put("familyName", this.familyName);
-        names.put("givenName", this.givenName);
-        names.put("middleName", this.middleName);
-        names.put("displayName", this.displayName);
-        returnValue.put("name", names);
-
-        // Meta information
-        Map<String, Object> meta = new HashMap<>();
-        meta.put("resourceType", "User");
-        meta.put("location", ("/scim/v2/Users/" + this.id));
-        returnValue.put("meta", meta);
-
-        List<Map<String, Object>> emails = new ArrayList<>();
-        Map<String, Object> primaryEmail = new HashMap<>();
-        primaryEmail.put("primary", true);
-        primaryEmail.put("value", email);
-        primaryEmail.put("type", "work");
-        emails.add(primaryEmail);
-        returnValue.put("emails", emails);
-
-        return returnValue;
+        return this.userScimResourceFormatter.toScimResource(this);
     }
 }

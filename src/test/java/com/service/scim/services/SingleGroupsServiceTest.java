@@ -41,10 +41,13 @@ public class SingleGroupsServiceTest {
 
         Group group = new Group();
         group.id = groupId;
+        group.displayName = "Group with Members";
         when(groupRepository.findById(groupId)).thenReturn(Optional.of(group));
 
         GroupMembership membership = new GroupMembership();
         membership.groupId = groupId;
+        membership.userId = "user1";
+        membership.userDisplay = "User 1";
         Page<GroupMembership> membershipPage = new PageImpl<>(List.of(membership));
         when(groupMembershipRepository.findByGroupId(groupId, PageRequestBuilder.build())).thenReturn(membershipPage);
 

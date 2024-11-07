@@ -1,12 +1,10 @@
 package com.service.scim.utils;
 
 import com.service.scim.models.BaseModel;
-import com.service.scim.models.GroupMembership;
-import com.service.scim.models.User;
-import java.util.List;
+import com.service.scim.models.mapper.strategies.groupmembership.IGroupMembershipAssigner;
 import java.util.ArrayList;
-import java.util.Optional;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -15,82 +13,75 @@ import java.util.stream.Collectors;
  */
 public class ListResponse<T extends BaseModel> {
     private final List<T> list;
-    private List<GroupMembership> groupMemberships;
     private final int startIndex;
-    private int count;
+    private final int count;
     private final int totalResults;
+    private final IGroupMembershipAssigner<T> membershipAssigner;
 
-    public ListResponse() {
-        this.list = new ArrayList<>();
-        this.startIndex = 1;
-        this.count = 0;
-        this.totalResults = 0;
+    private ListResponse(Builder<T> builder) {
+        this.list = builder.list;
+        this.startIndex = builder.startIndex;
+        this.count = builder.count;
+        this.totalResults = builder.totalResults;
+        this.membershipAssigner = builder.membershipAssigner;
     }
 
-    public ListResponse(
-            List<T> list,
-            Optional<Integer> startIndex,
-            Optional<Integer> count,
-            Optional<Integer> totalResults,
-            List<GroupMembership> groupMemberships) {
-        this.list = list;
-        this.groupMemberships = groupMemberships;
-        // startIndex.orElse checks for optional values
-        this.startIndex = startIndex.orElse(1);
-        this.count = count.orElse(0);
-        this.totalResults = totalResults.orElse(0);
+    public static class Builder<T extends BaseModel> {
+        private List<T> list = new ArrayList<>();
+        private int startIndex = 1;
+        private int count = 0;
+        private int totalResults = 0;
+        private IGroupMembershipAssigner<T> membershipAssigner;
+
+        public Builder<T> withList(List<T> list) {
+            this.list = list;
+            return this;
+        }
+
+        public Builder<T> withStartIndex(int startIndex) {
+            this.startIndex = startIndex;
+            return this;
+        }
+
+        public Builder<T> withCount(int count) {
+            this.count = count;
+            return this;
+        }
+
+        public Builder<T> withTotalResults(int totalResults) {
+            this.totalResults = totalResults;
+            return this;
+        }
+
+        public Builder<T> withMembershipAssigner(IGroupMembershipAssigner<T> membershipAssigner) {
+            this.membershipAssigner = membershipAssigner;
+            return this;
+        }
+
+        public ListResponse<T> build() {
+            return new ListResponse<>(this);
+        }
     }
 
     /**
-     * @return JSON {@link Map} of {@link ListResponse} object
+     * Converts the object to a SCIM resource in JSON format
      */
-    public HashMap<String, Object> toScimResource() {
-        HashMap<String, Object> returnValue = new HashMap<>();
+    public Map<String, Object> toScimResource() {
+        Map<String, Object> scimResource = new HashMap<>();
+        scimResource.put("schemas", List.of("urn:ietf:params:scim:api:messages:2.0:ListResponse"));
+        scimResource.put("totalResults", this.totalResults);
+        scimResource.put("startIndex", this.startIndex);
+        scimResource.put("itemsPerPage", Math.min(this.count, this.totalResults));
 
-        List<String> schemas = new ArrayList<>();
-        schemas.add("urn:ietf:params:scim:api:messages:2.0:ListResponse");
-        returnValue.put("schemas", schemas);
-        returnValue.put("totalResults", this.totalResults);
-        returnValue.put("startIndex", this.startIndex);
+        List resources = this.list.stream()
+                .map(T::toScimResource)
+                .collect(Collectors.toList());
 
-
-        List<Map> resources = this.list.stream().map(T::toScimResource).collect(Collectors.toList());
-
-        //TODO: Refactor this to a more generic way
-        //add group memberships to each user resource
-        if (groupMemberships != null && !groupMemberships.isEmpty()) {
-            for (Map<String, Object> resource : resources) {
-                List<GroupMembership> memberships = groupMemberships.stream()
-                        .filter(gm -> {
-                            String resourceId = resource.get("id").toString();
-                            if (list.getFirst() instanceof User)
-                                return gm.userId.equals(resourceId);
-                            return gm.groupId.equals(resourceId);
-                        })
-                        .toList();
-                List<Map> groupMemberships = memberships.stream().map(member -> {
-                    if (list.getFirst() instanceof User)
-                        return member.toUserScimResource();
-                    return member.toScimResource();
-                }).collect(Collectors.toList());
-
-                if (list.getFirst() instanceof User) {
-                    resource.put("groups", groupMemberships);
-                } else {
-                    resource.put("members", groupMemberships);
-                }
-            }
+        if (membershipAssigner != null) {
+            resources = membershipAssigner.assignMemberships(resources, this.list);
         }
 
-        if (this.count > this.totalResults) {
-            this.count = this.totalResults;
-        }
-
-        if (this.count != 0) {
-            returnValue.put("itemsPerPage", this.count);
-        }
-
-        returnValue.put("Resources", resources);
-        return returnValue;
+        scimResource.put("Resources", resources);
+        return scimResource;
     }
 }

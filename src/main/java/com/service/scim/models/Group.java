@@ -1,9 +1,9 @@
 package com.service.scim.models;
 
 import com.service.scim.models.mapper.AbstractEntityMapper;
+import com.service.scim.models.mapper.strategies.formatter.GroupScimResourceFormatter;
+import com.service.scim.models.mapper.strategies.formatter.IScimResourceFormatter;
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,13 +32,22 @@ public class Group extends BaseModel {
     @Transient
     private List<GroupMembership> groupMemberships;
 
+    @Transient
+    private IScimResourceFormatter<Group> groupScimResourceFormatter;
+
     public void setGroupMemberships(List<GroupMembership> groupMemberships) {
         this.groupMemberships = groupMemberships;
     }
+    public List<GroupMembership> getGroupMemberships() {
+        return this.groupMemberships;
+    }
 
-    public Group() {}
+    public Group() {
+        this.groupScimResourceFormatter = new GroupScimResourceFormatter();
+    }
 
     public Group(Map<String, Object> resource, AbstractEntityMapper<Group> groupEntityMapper) {
+        this.groupScimResourceFormatter = new GroupScimResourceFormatter();
         this.update(resource,groupEntityMapper);
     }
 
@@ -61,29 +70,8 @@ public class Group extends BaseModel {
      * @return JSON {@link Map} of {@link Group}
      */
     @Override
-    //TODO: Refactor to use SCIM class
-    public HashMap<String, Object> toScimResource() {
-        HashMap<String, Object> returnValue = new HashMap<>();
-        List<String> schemas = new ArrayList<>();
-        schemas.add("urn:ietf:params:scim:schemas:core:2.0:Group");
-        returnValue.put("schemas", schemas);
-        returnValue.put("id", this.id);
-        returnValue.put("displayName", this.displayName);
 
-        // Meta information
-        Map<String, Object> meta = new HashMap<>();
-        meta.put("resourceType", "Group");
-        meta.put("location", ("/scim/v2/Groups/" + this.id));
-        returnValue.put("meta", meta);
-
-        if (this.groupMemberships != null) {
-            List<Map> gmAL = this.groupMemberships
-                    .stream()
-                    .map(GroupMembership::toScimResource)
-                    .toList();
-            returnValue.put("members", gmAL);
-        }
-
-        return returnValue;
+    public Map<String, Object> toScimResource() {
+        return this.groupScimResourceFormatter.toScimResource(this);
     }
 }

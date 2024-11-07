@@ -1,18 +1,12 @@
 package com.service.scim.controllers;
 
 import com.service.scim.models.User;
-import com.service.scim.models.mapper.AbstractEntityMapper;
 import com.service.scim.models.mapper.UserEntityMapper;
-import com.service.scim.models.mapper.strategies.entities.UpdateStrategy;
-import com.service.scim.repositories.IGroupMembershipRepository;
-import com.service.scim.repositories.IUserRepository;
 import com.service.scim.services.IUsersService;
-import com.service.scim.services.UsersService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
