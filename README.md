@@ -825,11 +825,11 @@ _For more examples, please refer to the [Documentation](https://scim-service-ser
 - [x] Implement unit tests
 - [x] Implement integration tests
 - [x] Implement auditkmjnnnn
-- [ ] Refactor ListResponse and Resource SCIM Response Entities (toScimResource method)
+- [x] Refactor ListResponse and Resource SCIM Response Entities (toScimResource method)
 - [ ] Export option to substitute Map<> objects in the endpoints
 - [ ] Implement Authentication and Authorization for security
 - [ ] health check
-- [ ] Refactor toScimResource method entities
+- [x] Refactor toScimResource method entities
 - [ ] Add Schema endpoint
 - [ ] Implement resiliency patterns like Circuit Breaker and Retry
 - [ ] Implement redis for cache
