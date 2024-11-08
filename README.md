@@ -106,6 +106,7 @@ The project is designed with spring web rest API and design pattern like Templat
 - Template Method: 
 - Strategy:
 - Factory:
+- Builder:
 
 Entity field mapper diagram - Template Method + Pattern Strategy
 
@@ -113,7 +114,15 @@ Entity field mapper diagram - Template Method + Pattern Strategy
 
 Entity mapper diagram - Factory + Pattern Strategy
 
-![Mapper Patch Operations Diagram][Mapper-Patch-Operations-Diagram]
+![Mapper Patch Operations Diagram][Mapper-Patch-Operation-Diagram]
+
+ListResponse and Formatter Resource SCIM Response Entities - Builder + Pattern Strategy
+
+![ListResponse-Resource-SCIM-Diagram][ListResponse-Resource-SCIM-Response-Entities]
+
+Group Membership Assigner Diagram - Pattern Strategy
+
+![Group-Resource-SCIM-Diagram][GroupMembershipAssigner]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -914,7 +923,9 @@ Project Link: [https://github.com/Great-Side-Projects/scim-service-server](https
 [product-screenshot-UI5]: images/screenshotUI5.png
 [architecture-diagram]: images/Design%20Architecture%20SCIM%20Service%20Server.drawio.svg
 [Mapper-Field-Classes-Diagram]: images/Mapper_Strategy_TemplateMethod.png
-[Mapper-Patch-Operations-Diagram]: images/Mapper_Factory_Strategy.png
+[Mapper-Patch-Operation-Diagram]: images/Mapper_Factory_Strategy.png
+[ListResponse-Resource-SCIM-Response-Entities]: images/ListResponse.png
+[GroupMembershipAssigner]: images/GroupMembershipAssigner.png
 [Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
 [Bootstrap-url]: https://getbootstrap.com
 [JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
